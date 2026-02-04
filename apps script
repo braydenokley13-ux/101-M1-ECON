@@ -1,0 +1,391 @@
+/***************************************************
+ * BOW MODULE 1 — FINAL ECON SIMULATION
+ * Version: v2.0 (SYSTEM_LOG answer key architecture)
+ ***************************************************/
+
+/**************** CONFIG ****************/
+const MCQ_ROWS = [5, 11, 18, 25, 32]; // B5, B11, B18, B25, B32
+const CHAPTER_PASS_COUNT = 4;        // 4 / 5 required
+
+/**************** MENU ****************/
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu("BOW Simulation")
+    .addSubMenu(
+      SpreadsheetApp.getUi()
+        .createMenu("Chapter Checks")
+        .addItem("Check Chapter 1", "checkChapter1")
+        .addItem("Check Chapter 2", "checkChapter2")
+        .addItem("Check Chapter 3", "checkChapter3")
+    )
+    .addSeparator()
+    .addItem("Run Final Evaluation", "runFinalEvaluation")
+    .addSeparator()
+    .addItem("Lock Simulation", "lockSimulation")
+    .addItem("Unlock Simulation", "unlockSimulation")
+    .addToUi();
+}
+function getOrPromptEmail_() {
+  const ss = SpreadsheetApp.getActive();
+  const start = ss.getSheetByName("START");
+  if (!start) throw new Error('Missing "START" sheet.');
+
+  let email = String(start.getRange("B6").getValue()).trim();
+
+  if (email && email.includes("@")) {
+    return email;
+  }
+
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.prompt(
+    "Enter Your Email",
+    "Please enter the email address where your BOW results should be sent:",
+    ui.ButtonSet.OK_CANCEL
+  );
+
+  if (response.getSelectedButton() !== ui.Button.OK) {
+    throw new Error("Email entry cancelled.");
+  }
+
+  email = response.getResponseText().trim();
+
+  if (!email || !email.includes("@")) {
+    ui.alert("Invalid email. Please run the check again and enter a valid email.");
+    throw new Error("Invalid email entered.");
+  }
+
+  start.getRange("B6").setValue(email);
+  return email;
+}
+
+/**************** CHAPTER ROUTERS ****************/
+function checkChapter1() { runChapterCheck_("CH1_MCQ"); }
+function checkChapter2() { runChapterCheck_("CH2_MCQ"); }
+function checkChapter3() { runChapterCheck_("CH3_MCQ"); }
+
+/**************** CHAPTER CHECK CORE ****************/
+function runChapterCheck_(chapterSheetName) {
+  const ss = SpreadsheetApp.getActive();
+  const start = ss.getSheetByName("START");
+  const log = ss.getSheetByName("SYSTEM_LOG");
+  const sh = ss.getSheetByName(chapterSheetName);
+
+  if (!start || !log || !sh) {
+    throw new Error("Missing START, SYSTEM_LOG, or chapter sheet.");
+  }
+
+  const email = getOrPromptEmail_();
+
+  if (!email) throw new Error("START!B6 email is blank.");
+
+  const answerKey = getAnswerKey_(chapterSheetName);
+  if (answerKey.length !== 5) {
+    throw new Error(`Answer key incomplete for ${chapterSheetName}`);
+  }
+
+  let correct = 0;
+  let detail = [];
+
+  MCQ_ROWS.forEach((row, i) => {
+    const studentAnswer = sh.getRange(`B${row}`).getValue();
+    const correctAnswer = answerKey[i];
+    const isCorrect = studentAnswer === correctAnswer;
+
+    if (isCorrect) correct++;
+    detail.push(`Q${i + 1}: ${studentAnswer || "—"} ${isCorrect ? "✓" : "✗"} (Ans: ${correctAnswer})`);
+  });
+
+  const scorePct = Math.round((correct / 5) * 100);
+  const status = (correct >= CHAPTER_PASS_COUNT) ? "PASS" : "FAIL";
+
+  // Write visible results on chapter sheet
+  sh.getRange("E2").setValue(scorePct);
+  sh.getRange("E3").setValue(status);
+  sh.getRange("E4").setValue(new Date());
+
+  // Email student
+ sendBeautifulEmail_(
+  email,
+  `BOW Module 1 — ${chapterSheetName} Result`,
+  status === "PASS" ? "Chapter Passed" : "Chapter Review Required",
+  chapterSheetName.replace("_", " "),
+  [
+    `<strong>Score:</strong> ${correct}/5 (${scorePct}%)`,
+    `<strong>Status:</strong> ${status}`,
+    "",
+    "<strong>Question Breakdown</strong>",
+    ...detail.map(d => d.replace("✓", "✓").replace("✗", "✗")),
+    status === "FAIL"
+      ? "You must revise this chapter and re-run the check to proceed."
+      : "You may proceed to the next stage of the simulation."
+  ],
+  "This result was generated automatically by the BOW Simulation Engine."
+);
+
+
+  // Log attempt
+  const attempt = nextAttempt_(log, email, chapterSheetName);
+
+  log.appendRow([
+    new Date(),
+    email,
+    chapterSheetName,
+    scorePct,
+    status,
+    attempt,
+    detail.join(" | ")
+  ]);
+}
+
+/**************** FINAL EVALUATION ****************/
+function runFinalEvaluation() {
+  const ss = SpreadsheetApp.getActive();
+  const results = ss.getSheetByName("RESULTS");
+  const start = ss.getSheetByName("START");
+  const log = ss.getSheetByName("SYSTEM_LOG");
+
+  if (!results || !start || !log) {
+    throw new Error("Missing RESULTS, START, or SYSTEM_LOG.");
+  }
+
+  const email = getOrPromptEmail_();
+  if (!email) throw new Error("START!B6 email is blank.");
+
+  const rawSimStatus = String(results.getRange("B3").getValue()).toUpperCase();
+const simPassed =
+  rawSimStatus.includes("PASS");
+
+  const mcqScore = calculateOverallMCQ_();
+  const finalStatus =
+  (simPassed && mcqScore >= 65) ? "PASS" : "FAIL";
+
+
+  results.getRange("B4").setValue(mcqScore);
+  results.getRange("B5").setValue(finalStatus);
+
+  if (finalStatus === "FAIL") {
+    sendBeautifulEmail_(
+  email,
+  "BOW Module 1 — Final Result",
+  "Module Not Passed",
+  "Final Evaluation Summary",
+  [
+    `<strong>MCQ Score:</strong> ${mcqScore}%`,
+    `<strong>Simulation Status:</strong> ${rawSimStatus}`,
+    "",
+    "You did not meet all required conditions to pass Module 1.",
+    "Review your simulation decisions and MCQs, then re-run the final evaluation."
+  ],
+  "No credentials were issued for this attempt."
+);
+
+
+    log.appendRow([
+      new Date(),
+      email,
+      "FINAL_EVAL",
+      mcqScore,
+      "FAIL",
+      nextAttempt_(log, email, "FINAL_EVAL"),
+      `simStatus=${simStatus}`
+    ]);
+    return;
+  }
+
+  const claimCode = generateClaimCode_(mcqScore);
+  results.getRange("B6").setValue(claimCode);
+
+sendBeautifulEmail_(
+  email,
+  "BOW Module 1 — Credential Issued",
+  "Module Completed Successfully",
+  "Official Result",
+  [
+    `<strong>Final MCQ Score:</strong> ${mcqScore}%`,
+    `<strong>Claim Code:</strong> <span style="color:#fbbf24;font-weight:700;">${claimCode}</span>`,
+    "",
+    "This claim code represents verified completion of Module 1.",
+    "You may now redeem or present this credential as instructed."
+  ],
+  "This credential is uniquely tied to your submission."
+);
+
+
+  lockSimulation();
+
+  log.appendRow([
+    new Date(),
+    email,
+    "FINAL_EVAL",
+    mcqScore,
+    "PASS",
+    nextAttempt_(log, email, "FINAL_EVAL"),
+    `claimCode=${claimCode}`
+  ]);
+}
+
+/**************** MCQ HELPERS ****************/
+function getAnswerKey_(chapterSheetName) {
+  const ss = SpreadsheetApp.getActive();
+  const log = ss.getSheetByName("SYSTEM_LOG");
+  const data = log.getDataRange().getValues();
+
+  const key = [];
+
+  data.forEach(row => {
+    if (row[2] === chapterSheetName && /^Q\d$/.test(row[3])) {
+      key.push(row[4]);
+    }
+  });
+
+  return key;
+}
+
+function calculateOverallMCQ_() {
+  const chapters = ["CH1_MCQ", "CH2_MCQ", "CH3_MCQ"];
+  let totalCorrect = 0;
+  let totalQuestions = 0;
+
+  chapters.forEach(ch => {
+    const key = getAnswerKey_(ch);
+    const sh = SpreadsheetApp.getActive().getSheetByName(ch);
+    if (!sh) return;
+
+    MCQ_ROWS.forEach((row, i) => {
+      totalQuestions++;
+      if (sh.getRange(`B${row}`).getValue() === key[i]) {
+        totalCorrect++;
+      }
+    });
+  });
+
+  return Math.round((totalCorrect / totalQuestions) * 100);
+}
+
+/**************** CLAIM CODE ****************/
+function generateClaimCode_(score) {
+  let pool;
+
+  if (score >= 90) {
+    pool = [
+      "BOW-M1-GOLD-ALPHA",
+      "BOW-M1-GOLD-PRIME",
+      "BOW-M1-GOLD-ELITE"
+    ];
+  } else if (score >= 75) {
+    pool = [
+      "BOW-M1-SILVER-CORE",
+      "BOW-M1-SILVER-EDGE",
+      "BOW-M1-SILVER-PRO"
+    ];
+  } else {
+    pool = [
+      "BOW-M1-BRONZE-BASE",
+      "BOW-M1-BRONZE-START",
+      "BOW-M1-BRONZE-FOUND"
+    ];
+  }
+
+  const base = pool[Math.floor(Math.random() * pool.length)];
+  const suffix = generateRandomSuffix_(5);
+
+  return `${base}-${suffix}`;
+}
+
+/**************** LOCKING ****************/
+function lockSimulation() {
+  const ss = SpreadsheetApp.getActive();
+  ss.getSheets().forEach(sh => {
+    if (sh.getName() !== "SYSTEM_LOG") {
+      sh.protect().setWarningOnly(true);
+    }
+  });
+}
+
+function unlockSimulation() {
+  const ss = SpreadsheetApp.getActive();
+  ss.getProtections(SpreadsheetApp.ProtectionType.SHEET)
+    .forEach(p => p.remove());
+}
+
+/**************** ATTEMPT COUNTER ****************/
+function nextAttempt_(log, email, action) {
+  const data = log.getDataRange().getValues();
+  let count = 0;
+
+  data.forEach(r => {
+    if (r[1] === email && r[2] === action) count++;
+  });
+
+  return count + 1;
+}
+function sendBeautifulEmail_(to, subject, title, subtitle, bodyLines, footerNote) {
+  const html = `
+  <div style="
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:#0b0f1a;
+    padding:40px;
+    color:#ffffff;
+  ">
+    <div style="
+      max-width:620px;
+      margin:auto;
+      background:#111827;
+      border-radius:16px;
+      padding:36px;
+      box-shadow:0 20px 40px rgba(0,0,0,0.4);
+    ">
+
+      <div style="
+        font-size:12px;
+        letter-spacing:0.15em;
+        color:#9ca3af;
+        margin-bottom:12px;
+      ">
+        BOW SPORTS CAPITAL · MODULE 1
+      </div>
+
+      <h1 style="
+        font-size:28px;
+        font-weight:700;
+        margin:0 0 8px 0;
+        color:#ffffff;
+      ">
+        ${title}
+      </h1>
+
+      <div style="
+        font-size:16px;
+        color:#93c5fd;
+        margin-bottom:28px;
+      ">
+        ${subtitle}
+      </div>
+
+      <div style="
+        font-size:16px;
+        line-height:1.6;
+        color:#e5e7eb;
+      ">
+        ${bodyLines.map(line => `<p style="margin:0 0 14px 0;">${line}</p>`).join("")}
+      </div>
+
+      <div style="
+        margin-top:32px;
+        padding-top:20px;
+        border-top:1px solid #1f2937;
+        font-size:13px;
+        color:#9ca3af;
+      ">
+        ${footerNote}
+      </div>
+    </div>
+  </div>
+  `;
+
+  MailApp.sendEmail({
+    to,
+    subject,
+    htmlBody: html
+  });
+}
