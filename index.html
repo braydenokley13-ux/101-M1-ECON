@@ -1,0 +1,2251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEGA CITY TYCOON - Economics Adventure!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #22d3ee;
+            --accent: #f472b6;
+            --gold: #fbbf24;
+            --success: #10b981;
+            --danger: #ef4444;
+            --dark: #1e1b4b;
+            --darker: #0f0a2e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* ANIMATED BACKGROUND */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .floating-shape {
+            position: absolute;
+            opacity: 0.1;
+            animation: floatShape 20s infinite ease-in-out;
+        }
+
+        @keyframes floatShape {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+        }
+
+        /* CONFETTI */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            animation: confettiFall 3s ease-out forwards;
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* MAIN CONTAINER */
+        .game-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* HEADER */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .logo {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(34, 211, 238, 0.5);
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+        }
+
+        .coins-display {
+            color: var(--gold);
+        }
+
+        .xp-display {
+            color: var(--secondary);
+        }
+
+        /* SCREENS */
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* WELCOME SCREEN */
+        .welcome-screen {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .welcome-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 4rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--gold), var(--accent), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titlePulse 2s infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .welcome-subtitle {
+            font-size: 1.5rem;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 40px;
+        }
+
+        .mascot {
+            font-size: 8rem;
+            margin: 30px 0;
+            animation: mascotBounce 1s infinite;
+        }
+
+        @keyframes mascotBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .name-input-container {
+            max-width: 400px;
+            margin: 30px auto;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 20px 30px;
+            font-size: 1.3rem;
+            border: 3px solid var(--primary);
+            border-radius: 50px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-align: center;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+
+        .name-input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3);
+        }
+
+        .name-input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 18px 50px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Nunito', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), #f59e0b);
+            color: var(--dark);
+            box-shadow: 0 10px 40px rgba(251, 191, 36, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* CHAPTER SELECT */
+        .chapter-select {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 40px 20px;
+        }
+
+        .chapter-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            border: 3px solid rgba(255,255,255,0.1);
+            transition: all 0.4s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chapter-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: 0.5s;
+        }
+
+        .chapter-card:hover::before {
+            left: 100%;
+        }
+
+        .chapter-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--secondary);
+            box-shadow: 0 30px 60px rgba(34, 211, 238, 0.2);
+        }
+
+        .chapter-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .chapter-card.completed {
+            border-color: var(--success);
+        }
+
+        .chapter-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        .chapter-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .chapter-desc {
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+        }
+
+        .chapter-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+        }
+
+        /* GAME AREA */
+        .game-area {
+            background: rgba(255,255,255,0.05);
+            border-radius: 30px;
+            padding: 40px;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .game-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--secondary);
+        }
+
+        .game-subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        /* BUDGET BAR */
+        .budget-display {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .budget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .budget-label {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .budget-amount {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2rem;
+            color: var(--gold);
+        }
+
+        .budget-bar {
+            height: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .budget-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--secondary));
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .budget-fill.warning {
+            background: linear-gradient(90deg, var(--gold), #f59e0b);
+        }
+
+        .budget-fill.danger {
+            background: linear-gradient(90deg, var(--danger), #dc2626);
+        }
+
+        /* PROJECT CARDS */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .project-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 25px;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .project-card:hover {
+            background: rgba(255,255,255,0.12);
+            transform: scale(1.02);
+        }
+
+        .project-card.selected {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.2);
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .project-card.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .project-icon {
+            font-size: 3rem;
+        }
+
+        .project-cost {
+            background: rgba(251, 191, 36, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .project-name {
+            font-weight: 800;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+
+        .project-impact {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.95rem;
+        }
+
+        .project-impact-value {
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        /* CITY VIEW */
+        .city-view {
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border-radius: 20px;
+            height: 200px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px;
+        }
+
+        .building {
+            background: linear-gradient(180deg, #4a5568, #2d3748);
+            border-radius: 5px 5px 0 0;
+            position: relative;
+            transition: all 0.5s;
+            transform-origin: bottom;
+        }
+
+        .building.active {
+            animation: buildingRise 0.5s ease;
+        }
+
+        @keyframes buildingRise {
+            from { transform: scaleY(0); }
+            to { transform: scaleY(1); }
+        }
+
+        .building::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            width: 80%;
+            height: 80%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 15px,
+                rgba(255,255,0,0.3) 15px,
+                rgba(255,255,0,0.3) 20px
+            );
+            background-size: 100% 25px;
+        }
+
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+        }
+
+        .star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* QUIZ SECTION */
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .quiz-progress {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .quiz-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            transition: all 0.3s;
+        }
+
+        .quiz-dot.active {
+            background: var(--secondary);
+            transform: scale(1.3);
+            box-shadow: 0 0 20px var(--secondary);
+        }
+
+        .quiz-dot.correct {
+            background: var(--success);
+        }
+
+        .quiz-dot.wrong {
+            background: var(--danger);
+        }
+
+        .question-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 25px;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        .question-number {
+            font-size: 1rem;
+            color: var(--secondary);
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            font-weight: 700;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .answers-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .answer-btn {
+            padding: 20px 25px;
+            background: rgba(255,255,255,0.08);
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .answer-btn:hover:not(:disabled) {
+            background: rgba(255,255,255,0.15);
+            border-color: var(--secondary);
+            transform: translateX(10px);
+        }
+
+        .answer-btn.selected {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.3);
+        }
+
+        .answer-btn.correct {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.3);
+            animation: correctPulse 0.5s;
+        }
+
+        .answer-btn.wrong {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.3);
+            animation: shake 0.5s;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* FEEDBACK POPUP */
+        .feedback-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .feedback-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s;
+        }
+
+        .feedback-card {
+            background: var(--dark);
+            border-radius: 30px;
+            padding: 50px;
+            text-align: center;
+            max-width: 500px;
+            border: 3px solid;
+            animation: popIn 0.4s ease;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .feedback-card.success {
+            border-color: var(--success);
+        }
+
+        .feedback-card.fail {
+            border-color: var(--danger);
+        }
+
+        .feedback-icon {
+            font-size: 6rem;
+            margin-bottom: 20px;
+        }
+
+        .feedback-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .feedback-text {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        /* RESULTS SCREEN */
+        .results-container {
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        .results-badge {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, var(--gold), #f59e0b);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 20px 60px rgba(251, 191, 36, 0.4);
+            animation: badgePop 1s ease;
+        }
+
+        @keyframes badgePop {
+            0% { transform: scale(0) rotate(-180deg); }
+            60% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .results-badge-icon {
+            font-size: 4rem;
+        }
+
+        .results-badge-label {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.2rem;
+            color: var(--dark);
+        }
+
+        .results-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--gold), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .results-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .result-stat {
+            background: rgba(255,255,255,0.08);
+            padding: 30px 40px;
+            border-radius: 20px;
+        }
+
+        .result-stat-value {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3rem;
+            color: var(--secondary);
+        }
+
+        .result-stat-label {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.7);
+            margin-top: 5px;
+        }
+
+        .claim-code {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
+            border: 3px solid var(--gold);
+            border-radius: 20px;
+            padding: 30px 50px;
+            display: inline-block;
+            margin: 30px 0;
+        }
+
+        .claim-code-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .claim-code-value {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2rem;
+            color: var(--gold);
+            letter-spacing: 3px;
+        }
+
+        /* ACHIEVEMENTS */
+        .achievements-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .achievement {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            width: 120px;
+            opacity: 0.3;
+            transition: all 0.3s;
+        }
+
+        .achievement.unlocked {
+            opacity: 1;
+            background: rgba(251, 191, 36, 0.15);
+            border: 2px solid var(--gold);
+        }
+
+        .achievement-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .achievement-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* SOUND TOGGLE */
+        .sound-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+
+        .sound-toggle:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+
+        /* PROGRESS BAR */
+        .overall-progress {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .progress-label {
+            font-weight: 700;
+        }
+
+        .progress-track {
+            height: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* IMPACT METER */
+        .impact-display {
+            background: rgba(99, 102, 241, 0.2);
+            border: 2px solid var(--primary);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .impact-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 5px;
+        }
+
+        .impact-value {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            color: var(--secondary);
+        }
+
+        .impact-target {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 5px;
+        }
+
+        /* MOBILE RESPONSIVE */
+        @media (max-width: 768px) {
+            .welcome-title { font-size: 2.5rem; }
+            .game-header { flex-direction: column; gap: 15px; }
+            .stats-bar { flex-wrap: wrap; justify-content: center; }
+            .mascot { font-size: 5rem; }
+            .btn { padding: 15px 30px; font-size: 1rem; }
+            .game-title { font-size: 1.8rem; }
+            .question-text { font-size: 1.2rem; }
+        }
+
+        /* TOOLTIP */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+            bottom: calc(100% + 10px);
+        }
+
+        /* STREAK INDICATOR */
+        .streak-display {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-weight: 700;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.3s;
+            z-index: 50;
+        }
+
+        .streak-display.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* HELP BUBBLES */
+        .help-bubble {
+            background: rgba(99, 102, 241, 0.3);
+            border-left: 4px solid var(--primary);
+            padding: 15px 20px;
+            border-radius: 0 15px 15px 0;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+        }
+
+        .help-bubble-icon {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="bg-animation" id="bgAnimation"></div>
+
+    <!-- Confetti Container -->
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <!-- Sound Toggle -->
+    <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
+
+    <!-- Streak Display -->
+    <div class="streak-display" id="streakDisplay">🔥 Streak: <span id="streakCount">0</span></div>
+
+    <div class="game-container">
+        <!-- Header -->
+        <header class="game-header">
+            <div class="logo">🏙️ MEGA CITY TYCOON</div>
+            <div class="stats-bar">
+                <div class="stat-item coins-display">
+                    <span class="stat-icon">💰</span>
+                    <span id="coinsDisplay">100</span> coins
+                </div>
+                <div class="stat-item xp-display">
+                    <span class="stat-icon">⭐</span>
+                    <span id="xpDisplay">0</span> XP
+                </div>
+            </div>
+        </header>
+
+        <!-- Welcome Screen -->
+        <div class="screen active" id="welcomeScreen">
+            <div class="welcome-screen">
+                <h1 class="welcome-title">MEGA CITY TYCOON</h1>
+                <p class="welcome-subtitle">Can YOU build the ultimate city? 🌟</p>
+                <div class="mascot">🏗️</div>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; color: rgba(255,255,255,0.8);">
+                    Become the MAYOR and make tough choices!<br>
+                    Learn real economics while having a BLAST! 🚀
+                </p>
+                <div class="name-input-container">
+                    <input type="text" class="name-input" id="playerName" placeholder="Enter your Mayor name..." maxlength="20">
+                </div>
+                <button class="btn btn-primary" onclick="startGame()">
+                    START YOUR ADVENTURE! 🎮
+                </button>
+            </div>
+        </div>
+
+        <!-- Chapter Select Screen -->
+        <div class="screen" id="chapterSelectScreen">
+            <div class="overall-progress">
+                <div class="progress-header">
+                    <span class="progress-label">🎯 Overall Progress</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <h2 style="text-align: center; font-family: 'Fredoka One', cursive; font-size: 2.5rem; margin-bottom: 30px;">
+                Choose Your Mission! 🎯
+            </h2>
+
+            <div class="chapter-select">
+                <div class="chapter-card" id="chapter1Card" onclick="startChapter(1)">
+                    <span class="chapter-badge" id="chapter1Badge"></span>
+                    <div class="chapter-icon">🏗️</div>
+                    <h3 class="chapter-title">Level 1: Build It!</h3>
+                    <p class="chapter-desc">Start your city from scratch! Choose what to build first.</p>
+                </div>
+
+                <div class="chapter-card locked" id="chapter2Card" onclick="startChapter(2)">
+                    <span class="chapter-badge" id="chapter2Badge">🔒</span>
+                    <div class="chapter-icon">📈</div>
+                    <h3 class="chapter-title">Level 2: Rising Costs!</h3>
+                    <p class="chapter-desc">Things are getting expensive! Can you handle it?</p>
+                </div>
+
+                <div class="chapter-card locked" id="chapter3Card" onclick="startChapter(3)">
+                    <span class="chapter-badge" id="chapter3Badge">🔒</span>
+                    <div class="chapter-icon">🎯</div>
+                    <h3 class="chapter-title">Level 3: Master Plan!</h3>
+                    <p class="chapter-desc">Make the BIG decisions that shape your city's future!</p>
+                </div>
+
+                <div class="chapter-card locked" id="finalCard" onclick="startFinalChallenge()">
+                    <span class="chapter-badge" id="finalBadge">🔒</span>
+                    <div class="chapter-icon">👑</div>
+                    <h3 class="chapter-title">FINAL BOSS!</h3>
+                    <p class="chapter-desc">The ULTIMATE Economics Challenge! Are you ready?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter 1 Simulation -->
+        <div class="screen" id="chapter1SimScreen">
+            <button class="back-btn" onclick="goToChapterSelect()">← Back to Missions</button>
+
+            <div class="game-area">
+                <h2 class="game-title">🏗️ LEVEL 1: BUILD YOUR CITY!</h2>
+                <p class="game-subtitle">You have 100 coins. Pick projects wisely - you can't afford them all!</p>
+
+                <div class="city-view" id="cityView1">
+                    <div class="stars" id="stars1"></div>
+                </div>
+
+                <div class="budget-display">
+                    <div class="budget-header">
+                        <span class="budget-label">💰 Your Budget</span>
+                        <span class="budget-amount"><span id="ch1Budget">100</span> coins</span>
+                    </div>
+                    <div class="budget-bar">
+                        <div class="budget-fill" id="ch1BudgetBar" style="width: 100%"></div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div class="impact-display" style="flex: 1; min-width: 200px;">
+                        <div class="impact-label">🌟 City Impact</div>
+                        <div class="impact-value" id="ch1Impact">0</div>
+                        <div class="impact-target">Target: 60+ points</div>
+                    </div>
+                    <div class="impact-display" style="flex: 1; min-width: 200px;">
+                        <div class="impact-label">🛒 Projects Selected</div>
+                        <div class="impact-value" id="ch1Selected">0</div>
+                        <div class="impact-target">Choose carefully!</div>
+                    </div>
+                </div>
+
+                <div class="help-bubble">
+                    <span class="help-bubble-icon">💡</span>
+                    <strong>TIP:</strong> Click projects to select them. You can't buy everything - that's called a <strong>BUDGET CONSTRAINT</strong>!
+                </div>
+
+                <div class="projects-grid" id="ch1Projects"></div>
+
+                <div style="text-align: center;">
+                    <button class="btn btn-success" id="ch1ConfirmBtn" onclick="confirmChapter1()" disabled>
+                        BUILD MY CITY! 🏙️
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter 1 Quiz -->
+        <div class="screen" id="chapter1QuizScreen">
+            <button class="back-btn" onclick="goToChapterSelect()">← Back to Missions</button>
+
+            <div class="game-area">
+                <h2 class="game-title">📝 LEVEL 1 QUIZ TIME!</h2>
+                <p class="game-subtitle">Let's see what you learned about budgets and choices!</p>
+
+                <div class="quiz-container">
+                    <div class="quiz-progress" id="quiz1Progress"></div>
+                    <div id="quiz1Container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter 2 Simulation -->
+        <div class="screen" id="chapter2SimScreen">
+            <button class="back-btn" onclick="goToChapterSelect()">← Back to Missions</button>
+
+            <div class="game-area">
+                <h2 class="game-title">📈 LEVEL 2: RISING COSTS!</h2>
+                <p class="game-subtitle">Warning: Each project you pick makes the NEXT one cost MORE!</p>
+
+                <div class="city-view" id="cityView2">
+                    <div class="stars" id="stars2"></div>
+                </div>
+
+                <div class="budget-display">
+                    <div class="budget-header">
+                        <span class="budget-label">💰 Your Budget</span>
+                        <span class="budget-amount"><span id="ch2Budget">0</span> coins</span>
+                    </div>
+                    <div class="budget-bar">
+                        <div class="budget-fill" id="ch2BudgetBar" style="width: 100%"></div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div class="impact-display" style="flex: 1; min-width: 200px;">
+                        <div class="impact-label">🌟 Total City Impact</div>
+                        <div class="impact-value" id="ch2Impact">0</div>
+                        <div class="impact-target">Target: 100+ points</div>
+                    </div>
+                    <div class="impact-display" style="flex: 1; min-width: 200px; background: rgba(239, 68, 68, 0.2); border-color: var(--danger);">
+                        <div class="impact-label">⚠️ Cost Multiplier</div>
+                        <div class="impact-value" id="ch2Multiplier">1.0x</div>
+                        <div class="impact-target">Goes up each purchase!</div>
+                    </div>
+                </div>
+
+                <div class="help-bubble">
+                    <span class="help-bubble-icon">🧠</span>
+                    <strong>ECONOMICS FACT:</strong> This is called <strong>MARGINAL COST</strong> - each extra thing you do costs more than the last one!
+                </div>
+
+                <div class="projects-grid" id="ch2Projects"></div>
+
+                <div style="text-align: center;">
+                    <button class="btn btn-success" id="ch2ConfirmBtn" onclick="confirmChapter2()" disabled>
+                        FINISH BUILDING! 🏗️
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter 2 Quiz -->
+        <div class="screen" id="chapter2QuizScreen">
+            <button class="back-btn" onclick="goToChapterSelect()">← Back to Missions</button>
+
+            <div class="game-area">
+                <h2 class="game-title">📝 LEVEL 2 QUIZ TIME!</h2>
+                <p class="game-subtitle">Time to prove you understand rising costs!</p>
+
+                <div class="quiz-container">
+                    <div class="quiz-progress" id="quiz2Progress"></div>
+                    <div id="quiz2Container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter 3 Simulation -->
+        <div class="screen" id="chapter3SimScreen">
+            <button class="back-btn" onclick="goToChapterSelect()">← Back to Missions</button>
+
+            <div class="game-area">
+                <h2 class="game-title">🎯 LEVEL 3: THE MASTER PLAN!</h2>
+                <p class="game-subtitle">Make ONE big choice that will shape your city's future!</p>
+
+                <div class="city-view" id="cityView3">
+                    <div class="stars" id="stars3"></div>
+                </div>
+
+                <div class="budget-display">
+                    <div class="budget-header">
+                        <span class="budget-label">💰 Final Budget</span>
+                        <span class="budget-amount"><span id="ch3Budget">0</span> coins</span>
+                    </div>
+                    <div class="budget-bar">
+                        <div class="budget-fill" id="ch3BudgetBar" style="width: 100%"></div>
+                    </div>
+                </div>
+
+                <div class="impact-display" style="max-width: 300px; margin: 0 auto 20px;">
+                    <div class="impact-label">🌟 Total City Impact</div>
+                    <div class="impact-value" id="ch3Impact">0</div>
+                    <div class="impact-target">Target: 120+ points to pass!</div>
+                </div>
+
+                <div class="help-bubble">
+                    <span class="help-bubble-icon">🤔</span>
+                    <strong>THINK AHEAD:</strong> This is about <strong>OPTION VALUE</strong> - sometimes keeping your options open is smarter than going all-in!
+                </div>
+
+                <div class="projects-grid" id="ch3Projects"></div>
+
+                <div style="text-align: center;">
+                    <button class="btn btn-success" id="ch3ConfirmBtn" onclick="confirmChapter3()" disabled>
+                        MAKE MY CHOICE! 🎯
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter 3 Quiz -->
+        <div class="screen" id="chapter3QuizScreen">
+            <button class="back-btn" onclick="goToChapterSelect()">← Back to Missions</button>
+
+            <div class="game-area">
+                <h2 class="game-title">📝 LEVEL 3 QUIZ TIME!</h2>
+                <p class="game-subtitle">Show us your strategic thinking!</p>
+
+                <div class="quiz-container">
+                    <div class="quiz-progress" id="quiz3Progress"></div>
+                    <div id="quiz3Container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Challenge -->
+        <div class="screen" id="finalChallengeScreen">
+            <button class="back-btn" onclick="goToChapterSelect()">← Back to Missions</button>
+
+            <div class="game-area">
+                <h2 class="game-title">👑 FINAL BOSS CHALLENGE!</h2>
+                <p class="game-subtitle">The ULTIMATE test of everything you've learned!</p>
+
+                <div class="quiz-container">
+                    <div class="quiz-progress" id="quizFinalProgress"></div>
+                    <div id="quizFinalContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div class="screen" id="resultsScreen">
+            <div class="results-container">
+                <div class="results-badge" id="resultsBadge">
+                    <span class="results-badge-icon" id="badgeIcon">🏆</span>
+                    <span class="results-badge-label" id="badgeLabel">CHAMPION</span>
+                </div>
+
+                <h1 class="results-title" id="resultsTitle">Congratulations, Mayor!</h1>
+
+                <p style="font-size: 1.3rem; color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto 30px;">
+                    You've completed the MEGA CITY TYCOON Economics Challenge!
+                </p>
+
+                <div class="results-stats">
+                    <div class="result-stat">
+                        <div class="result-stat-value" id="finalScore">0%</div>
+                        <div class="result-stat-label">Final Score</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="result-stat-value" id="questionsCorrect">0/15</div>
+                        <div class="result-stat-label">Questions Right</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="result-stat-value" id="totalXP">0</div>
+                        <div class="result-stat-label">Total XP Earned</div>
+                    </div>
+                </div>
+
+                <div class="claim-code" id="claimCodeSection">
+                    <div class="claim-code-label">Your Claim Code</div>
+                    <div class="claim-code-value" id="claimCode">---</div>
+                </div>
+
+                <div class="achievements-container" id="achievementsContainer"></div>
+
+                <div style="margin-top: 50px;">
+                    <button class="btn btn-primary" onclick="restartGame()">PLAY AGAIN! 🔄</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Overlay -->
+    <div class="feedback-overlay" id="feedbackOverlay">
+        <div class="feedback-card" id="feedbackCard">
+            <div class="feedback-icon" id="feedbackIcon">🎉</div>
+            <h2 class="feedback-title" id="feedbackTitle">Amazing!</h2>
+            <p class="feedback-text" id="feedbackText">You did great!</p>
+            <button class="btn btn-primary" id="feedbackBtn" onclick="closeFeedback()">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== GAME STATE ====================
+        let gameState = {
+            playerName: 'Mayor',
+            coins: 100,
+            xp: 0,
+            streak: 0,
+            chapter1: { completed: false, budget: 100, impact: 0, score: 0, simPassed: false },
+            chapter2: { completed: false, budget: 0, impact: 0, score: 0, simPassed: false },
+            chapter3: { completed: false, budget: 0, impact: 0, score: 0, simPassed: false },
+            finalChallenge: { completed: false, score: 0 },
+            totalCorrect: 0,
+            totalQuestions: 0,
+            soundEnabled: true,
+            achievements: {
+                firstBuild: false,
+                budgetMaster: false,
+                perfectQuiz: false,
+                economicsExpert: false,
+                speedDemon: false,
+                streakMaster: false
+            }
+        };
+
+        // ==================== SOUND EFFECTS ====================
+        const sounds = {
+            click: () => playTone(800, 0.1),
+            correct: () => playTone(523, 0.15, 'sine', () => playTone(659, 0.15, 'sine', () => playTone(784, 0.2))),
+            wrong: () => playTone(200, 0.3, 'sawtooth'),
+            levelUp: () => {
+                playTone(523, 0.1, 'sine', () =>
+                    playTone(659, 0.1, 'sine', () =>
+                        playTone(784, 0.1, 'sine', () =>
+                            playTone(1047, 0.3))));
+            },
+            coin: () => playTone(1200, 0.1, 'sine', () => playTone(1600, 0.15)),
+            build: () => playTone(150, 0.2, 'square'),
+            victory: () => {
+                [523, 659, 784, 1047].forEach((freq, i) => {
+                    setTimeout(() => playTone(freq, 0.2), i * 150);
+                });
+            }
+        };
+
+        let audioCtx = null;
+
+        function playTone(frequency, duration, type = 'sine', callback = null) {
+            if (!gameState.soundEnabled) {
+                if (callback) setTimeout(callback, duration * 1000);
+                return;
+            }
+
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + duration);
+
+            if (callback) setTimeout(callback, duration * 1000);
+        }
+
+        function toggleSound() {
+            gameState.soundEnabled = !gameState.soundEnabled;
+            document.getElementById('soundToggle').textContent = gameState.soundEnabled ? '🔊' : '🔇';
+        }
+
+        // ==================== PROJECT DATA ====================
+        const chapter1Projects = [
+            { id: 'roads', name: 'Road Repairs', icon: '🛣️', cost: 20, impact: 18, desc: 'Fix the bumpy roads!' },
+            { id: 'schools', name: 'School Upgrades', icon: '🏫', cost: 25, impact: 22, desc: 'Better education!' },
+            { id: 'emergency', name: 'Emergency Services', icon: '🚒', cost: 30, impact: 25, desc: 'Keep everyone safe!' },
+            { id: 'transit', name: 'Public Transit', icon: '🚌', cost: 25, impact: 20, desc: 'Buses for everyone!' },
+            { id: 'parks', name: 'Parks & Recreation', icon: '🌳', cost: 15, impact: 15, desc: 'Fun outdoor spaces!' }
+        ];
+
+        const chapter2Projects = [
+            { id: 'housing', name: 'Housing Repairs', icon: '🏠', baseCost: 15, impact: 18, desc: 'Fix up homes!' },
+            { id: 'water', name: 'Water Systems', icon: '💧', baseCost: 20, impact: 22, desc: 'Clean water for all!' },
+            { id: 'tech', name: 'Public Safety Tech', icon: '📡', baseCost: 25, impact: 25, desc: 'Smart city security!' }
+        ];
+
+        const chapter3Options = [
+            { id: 'reserve', name: 'Emergency Reserve', icon: '🏦', cost: 10, impact: 15, desc: 'Save for rainy days - stay flexible!' },
+            { id: 'longterm', name: 'Long-Term Infrastructure', icon: '🌉', cost: 35, impact: 40, desc: 'Big project, big commitment!' },
+            { id: 'shortterm', name: 'Short-Term Improvements', icon: '✨', cost: 20, impact: 25, desc: 'Quick wins, keep options open!' }
+        ];
+
+        // ==================== QUIZ DATA ====================
+        const chapter1Quiz = [
+            {
+                q: "A city must choose between fixing roads OR building a new bus system because it can't afford both. What's this called?",
+                options: ["A) Incentives", "B) Budget constraint", "C) Marginal cost", "D) Revenue"],
+                correct: 1,
+                explanation: "When you can't have everything, that's a BUDGET CONSTRAINT!"
+            },
+            {
+                q: "When a city picks schools instead of parks, what is the 'opportunity cost'?",
+                options: ["A) The money spent on schools", "B) The park they didn't choose", "C) Higher taxes", "D) Future penalties"],
+                correct: 1,
+                explanation: "Opportunity cost = what you GIVE UP when you choose something else!"
+            },
+            {
+                q: "Why do tradeoffs exist when making decisions?",
+                options: ["A) Rules punish spending", "B) Rules change a lot", "C) Resources are LIMITED", "D) Decisions are permanent"],
+                correct: 2,
+                explanation: "We can't have unlimited everything - that's why we must choose!"
+            },
+            {
+                q: "A city delays a project because choosing it would block other important projects. This shows:",
+                options: ["A) Revenue generation", "B) Opportunity cost", "C) Progressive penalties", "D) Incentives"],
+                correct: 1,
+                explanation: "They're thinking about what they'd LOSE - that's opportunity cost thinking!"
+            },
+            {
+                q: "What's a budget constraint?",
+                options: ["A) A rule that stops ALL spending", "B) A limit that forces choices", "C) A penalty for bad decisions", "D) A way to increase money"],
+                correct: 1,
+                explanation: "Budget constraint = you have limited resources, so you must CHOOSE!"
+            }
+        ];
+
+        const chapter2Quiz = [
+            {
+                q: "Each new project becomes harder and MORE expensive than the last. What's this called?",
+                options: ["A) Budget constraint", "B) Opportunity cost", "C) Marginal cost", "D) Revenue"],
+                correct: 2,
+                explanation: "MARGINAL COST = the cost of doing ONE MORE thing!"
+            },
+            {
+                q: "Why might a system make later decisions MORE expensive?",
+                options: ["A) To punish people", "B) To encourage planning ahead", "C) Because money disappears", "D) To reward spending"],
+                correct: 1,
+                explanation: "Rising costs make you THINK before spending too fast!"
+            },
+            {
+                q: "When costs increase the more you spend, this is called:",
+                options: ["A) A fixed cost system", "B) A flat tax", "C) A progressive penalty system", "D) A revenue cap"],
+                correct: 2,
+                explanation: "PROGRESSIVE means it gets bigger as you go - like climbing stairs!"
+            },
+            {
+                q: "If rising costs make a city slow down spending, those costs are acting as:",
+                options: ["A) Revenue generator", "B) Random barrier", "C) Incentive", "D) Opportunity cost"],
+                correct: 2,
+                explanation: "INCENTIVES change behavior - rising costs incentivize careful spending!"
+            },
+            {
+                q: "Why is marginal cost important for the NEXT decision?",
+                options: ["A) Total cost doesn't matter", "B) It shows the cost of ONE MORE choice", "C) It includes past decisions", "D) It predicts revenue"],
+                correct: 1,
+                explanation: "Marginal cost tells you exactly what the NEXT thing will cost!"
+            }
+        ];
+
+        const chapter3Quiz = [
+            {
+                q: "A city delays a big project even though it looks good NOW. Why might this be smart?",
+                options: ["A) It lowers total spending", "B) It avoids opportunity cost", "C) It keeps future choices available", "D) It increases revenue"],
+                correct: 2,
+                explanation: "Staying flexible = OPTION VALUE! You keep your choices open!"
+            },
+            {
+                q: "When a city spends ALL its budget on one project, what do they lose MOST?",
+                options: ["A) Efficiency", "B) Flexibility", "C) Incentives", "D) Marginal cost"],
+                correct: 1,
+                explanation: "Going all-in means you can't change course later - bye bye FLEXIBILITY!"
+            },
+            {
+                q: "Why do long-term projects increase RISK compared to short-term ones?",
+                options: ["A) They always cost more", "B) They reduce ability to change later", "C) They require higher taxes", "D) They eliminate opportunity cost"],
+                correct: 1,
+                explanation: "Long commitments lock you in - harder to adapt to surprises!"
+            },
+            {
+                q: "A city picks a smaller project so they can handle emergencies later. This shows:",
+                options: ["A) Marginal cost", "B) Budget constraint", "C) Option value", "D) Progressive penalties"],
+                correct: 2,
+                explanation: "OPTION VALUE = the value of keeping your options open!"
+            },
+            {
+                q: "Which decision shows a TRADEOFF?",
+                options: ["A) Increasing the budget", "B) Choosing one project, rejecting another", "C) Saving all money", "D) Waiting forever"],
+                correct: 1,
+                explanation: "TRADEOFF = picking one thing means giving up something else!"
+            }
+        ];
+
+        const finalQuiz = [
+            {
+                q: "Which concept explains why choosing one option means giving up another?",
+                options: ["A) Marginal cost", "B) Opportunity cost", "C) Revenue", "D) Incentives"],
+                correct: 1
+            },
+            {
+                q: "Which concept focuses on the cost of making ONE additional decision?",
+                options: ["A) Opportunity cost", "B) Total cost", "C) Marginal cost", "D) Option value"],
+                correct: 2
+            },
+            {
+                q: "Why do systems use penalties that INCREASE as behavior continues?",
+                options: ["A) To reward early decisions", "B) To make systems fair", "C) To influence future behavior", "D) To increase revenue"],
+                correct: 2
+            },
+            {
+                q: "Which idea explains why flexibility can be MORE valuable than quick wins?",
+                options: ["A) Marginal cost", "B) Revenue", "C) Option value", "D) Budget constraint"],
+                correct: 2
+            },
+            {
+                q: "A city saves resources so it can respond to unexpected events. Which concept explains this?",
+                options: ["A) Opportunity cost", "B) Marginal cost", "C) Option value", "D) Progressive penalties"],
+                correct: 2
+            }
+        ];
+
+        // ==================== INITIALIZATION ====================
+        function init() {
+            createBackground();
+            createStars('stars1');
+            createStars('stars2');
+            createStars('stars3');
+
+            // Enter key support
+            document.getElementById('playerName').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') startGame();
+            });
+        }
+
+        function createBackground() {
+            const bg = document.getElementById('bgAnimation');
+            const shapes = ['🏢', '🏠', '🌳', '⭐', '💰', '📊'];
+            for (let i = 0; i < 15; i++) {
+                const shape = document.createElement('div');
+                shape.className = 'floating-shape';
+                shape.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+                shape.style.left = Math.random() * 100 + '%';
+                shape.style.top = Math.random() * 100 + '%';
+                shape.style.fontSize = (20 + Math.random() * 40) + 'px';
+                shape.style.animationDelay = Math.random() * 5 + 's';
+                bg.appendChild(shape);
+            }
+        }
+
+        function createStars(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            for (let i = 0; i < 30; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                container.appendChild(star);
+            }
+        }
+
+        // ==================== NAVIGATION ====================
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startGame() {
+            const name = document.getElementById('playerName').value.trim() || 'Mayor';
+            gameState.playerName = name;
+            sounds.levelUp();
+            showScreen('chapterSelectScreen');
+            updateChapterCards();
+        }
+
+        function goToChapterSelect() {
+            sounds.click();
+            showScreen('chapterSelectScreen');
+            updateChapterCards();
+        }
+
+        function updateChapterCards() {
+            // Chapter 1
+            const ch1Card = document.getElementById('chapter1Card');
+            const ch1Badge = document.getElementById('chapter1Badge');
+            ch1Card.classList.remove('locked', 'completed');
+            if (gameState.chapter1.completed) {
+                ch1Card.classList.add('completed');
+                ch1Badge.textContent = '✅';
+            }
+
+            // Chapter 2
+            const ch2Card = document.getElementById('chapter2Card');
+            const ch2Badge = document.getElementById('chapter2Badge');
+            if (gameState.chapter1.completed) {
+                ch2Card.classList.remove('locked');
+                ch2Badge.textContent = gameState.chapter2.completed ? '✅' : '';
+                if (gameState.chapter2.completed) ch2Card.classList.add('completed');
+            }
+
+            // Chapter 3
+            const ch3Card = document.getElementById('chapter3Card');
+            const ch3Badge = document.getElementById('chapter3Badge');
+            if (gameState.chapter2.completed) {
+                ch3Card.classList.remove('locked');
+                ch3Badge.textContent = gameState.chapter3.completed ? '✅' : '';
+                if (gameState.chapter3.completed) ch3Card.classList.add('completed');
+            }
+
+            // Final
+            const finalCard = document.getElementById('finalCard');
+            const finalBadge = document.getElementById('finalBadge');
+            if (gameState.chapter3.completed) {
+                finalCard.classList.remove('locked');
+                finalBadge.textContent = gameState.finalChallenge.completed ? '👑' : '';
+            }
+
+            // Update progress
+            let progress = 0;
+            if (gameState.chapter1.completed) progress += 25;
+            if (gameState.chapter2.completed) progress += 25;
+            if (gameState.chapter3.completed) progress += 25;
+            if (gameState.finalChallenge.completed) progress += 25;
+
+            document.getElementById('progressPercent').textContent = progress + '%';
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        // ==================== CHAPTER 1 ====================
+        let ch1Selected = [];
+
+        function startChapter(chapter) {
+            if (chapter === 1) {
+                sounds.click();
+                ch1Selected = [];
+                gameState.chapter1.budget = 100;
+                gameState.chapter1.impact = 0;
+                renderChapter1Projects();
+                showScreen('chapter1SimScreen');
+            } else if (chapter === 2 && gameState.chapter1.completed) {
+                sounds.click();
+                ch2Selected = [];
+                ch2Multiplier = 1;
+                gameState.chapter2.budget = gameState.chapter1.budget;
+                gameState.chapter2.impact = gameState.chapter1.impact;
+                renderChapter2Projects();
+                showScreen('chapter2SimScreen');
+            } else if (chapter === 3 && gameState.chapter2.completed) {
+                sounds.click();
+                ch3Selected = null;
+                gameState.chapter3.budget = gameState.chapter2.budget;
+                gameState.chapter3.impact = gameState.chapter2.impact;
+                renderChapter3Options();
+                showScreen('chapter3SimScreen');
+            }
+        }
+
+        function renderChapter1Projects() {
+            const container = document.getElementById('ch1Projects');
+            container.innerHTML = '';
+
+            chapter1Projects.forEach(project => {
+                const isSelected = ch1Selected.includes(project.id);
+                const canAfford = project.cost <= gameState.chapter1.budget || isSelected;
+
+                const card = document.createElement('div');
+                card.className = `project-card ${isSelected ? 'selected' : ''} ${!canAfford ? 'disabled' : ''}`;
+                card.onclick = () => toggleProject1(project);
+
+                card.innerHTML = `
+                    <div class="project-header">
+                        <span class="project-icon">${project.icon}</span>
+                        <span class="project-cost">💰 ${project.cost}</span>
+                    </div>
+                    <div class="project-name">${project.name}</div>
+                    <div class="project-impact">${project.desc}</div>
+                    <div class="project-impact">Impact: <span class="project-impact-value">+${project.impact} pts</span></div>
+                `;
+                container.appendChild(card);
+            });
+
+            updateChapter1Display();
+        }
+
+        function toggleProject1(project) {
+            const idx = ch1Selected.indexOf(project.id);
+            if (idx > -1) {
+                ch1Selected.splice(idx, 1);
+                gameState.chapter1.budget += project.cost;
+                gameState.chapter1.impact -= project.impact;
+                sounds.click();
+            } else if (project.cost <= gameState.chapter1.budget) {
+                ch1Selected.push(project.id);
+                gameState.chapter1.budget -= project.cost;
+                gameState.chapter1.impact += project.impact;
+                sounds.coin();
+                addBuilding('cityView1');
+            }
+            renderChapter1Projects();
+        }
+
+        function updateChapter1Display() {
+            document.getElementById('ch1Budget').textContent = gameState.chapter1.budget;
+            document.getElementById('ch1Impact').textContent = gameState.chapter1.impact;
+            document.getElementById('ch1Selected').textContent = ch1Selected.length;
+
+            const pct = (gameState.chapter1.budget / 100) * 100;
+            const bar = document.getElementById('ch1BudgetBar');
+            bar.style.width = pct + '%';
+            bar.classList.remove('warning', 'danger');
+            if (pct < 30) bar.classList.add('danger');
+            else if (pct < 50) bar.classList.add('warning');
+
+            const btn = document.getElementById('ch1ConfirmBtn');
+            btn.disabled = ch1Selected.length === 0;
+        }
+
+        function confirmChapter1() {
+            gameState.chapter1.simPassed = gameState.chapter1.impact >= 60;
+            sounds.build();
+            showScreen('chapter1QuizScreen');
+            startQuiz(1);
+        }
+
+        // ==================== CHAPTER 2 ====================
+        let ch2Selected = [];
+        let ch2Multiplier = 1;
+
+        function renderChapter2Projects() {
+            const container = document.getElementById('ch2Projects');
+            container.innerHTML = '';
+
+            document.getElementById('ch2Budget').textContent = gameState.chapter2.budget;
+            document.getElementById('ch2Impact').textContent = gameState.chapter2.impact;
+            document.getElementById('ch2Multiplier').textContent = ch2Multiplier.toFixed(1) + 'x';
+
+            const initialBudget = gameState.chapter1.budget;
+            const pct = (gameState.chapter2.budget / initialBudget) * 100;
+            document.getElementById('ch2BudgetBar').style.width = pct + '%';
+
+            chapter2Projects.forEach(project => {
+                const isSelected = ch2Selected.includes(project.id);
+                const adjustedCost = Math.round(project.baseCost * (isSelected ? 1 : ch2Multiplier));
+                const canAfford = adjustedCost <= gameState.chapter2.budget || isSelected;
+
+                const card = document.createElement('div');
+                card.className = `project-card ${isSelected ? 'selected' : ''} ${!canAfford ? 'disabled' : ''}`;
+                card.onclick = () => toggleProject2(project);
+
+                card.innerHTML = `
+                    <div class="project-header">
+                        <span class="project-icon">${project.icon}</span>
+                        <span class="project-cost">💰 ${adjustedCost} ${ch2Multiplier > 1 && !isSelected ? '<small>(was ' + project.baseCost + ')</small>' : ''}</span>
+                    </div>
+                    <div class="project-name">${project.name}</div>
+                    <div class="project-impact">${project.desc}</div>
+                    <div class="project-impact">Impact: <span class="project-impact-value">+${project.impact} pts</span></div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('ch2ConfirmBtn').disabled = ch2Selected.length === 0;
+        }
+
+        function toggleProject2(project) {
+            const idx = ch2Selected.indexOf(project.id);
+            const currentCost = Math.round(project.baseCost * ch2Multiplier);
+
+            if (idx > -1) {
+                const paidCost = Math.round(project.baseCost * (ch2Multiplier / 1.5));
+                ch2Selected.splice(idx, 1);
+                ch2Multiplier = Math.max(1, ch2Multiplier / 1.5);
+                gameState.chapter2.budget += paidCost;
+                gameState.chapter2.impact -= project.impact;
+                sounds.click();
+            } else if (currentCost <= gameState.chapter2.budget) {
+                ch2Selected.push(project.id);
+                gameState.chapter2.budget -= currentCost;
+                gameState.chapter2.impact += project.impact;
+                ch2Multiplier *= 1.5;
+                sounds.coin();
+                addBuilding('cityView2');
+            }
+            renderChapter2Projects();
+        }
+
+        function confirmChapter2() {
+            gameState.chapter2.simPassed = gameState.chapter2.impact >= 100;
+            sounds.build();
+            showScreen('chapter2QuizScreen');
+            startQuiz(2);
+        }
+
+        // ==================== CHAPTER 3 ====================
+        let ch3Selected = null;
+
+        function renderChapter3Options() {
+            const container = document.getElementById('ch3Projects');
+            container.innerHTML = '';
+
+            document.getElementById('ch3Budget').textContent = gameState.chapter3.budget;
+            document.getElementById('ch3Impact').textContent = gameState.chapter3.impact;
+
+            const initialBudget = gameState.chapter1.budget;
+            const pct = (gameState.chapter3.budget / initialBudget) * 100;
+            document.getElementById('ch3BudgetBar').style.width = pct + '%';
+
+            chapter3Options.forEach(option => {
+                const isSelected = ch3Selected === option.id;
+                const canAfford = option.cost <= gameState.chapter3.budget;
+
+                const card = document.createElement('div');
+                card.className = `project-card ${isSelected ? 'selected' : ''} ${!canAfford && !isSelected ? 'disabled' : ''}`;
+                card.onclick = () => selectOption3(option);
+
+                card.innerHTML = `
+                    <div class="project-header">
+                        <span class="project-icon">${option.icon}</span>
+                        <span class="project-cost">💰 ${option.cost}</span>
+                    </div>
+                    <div class="project-name">${option.name}</div>
+                    <div class="project-impact">${option.desc}</div>
+                    <div class="project-impact">Impact: <span class="project-impact-value">+${option.impact} pts</span></div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('ch3ConfirmBtn').disabled = !ch3Selected;
+        }
+
+        function selectOption3(option) {
+            if (option.cost > gameState.chapter3.budget && ch3Selected !== option.id) return;
+
+            // Deselect previous
+            if (ch3Selected) {
+                const prev = chapter3Options.find(o => o.id === ch3Selected);
+                gameState.chapter3.budget += prev.cost;
+                gameState.chapter3.impact -= prev.impact;
+            }
+
+            if (ch3Selected === option.id) {
+                ch3Selected = null;
+                sounds.click();
+            } else {
+                ch3Selected = option.id;
+                gameState.chapter3.budget -= option.cost;
+                gameState.chapter3.impact += option.impact;
+                sounds.coin();
+            }
+
+            renderChapter3Options();
+        }
+
+        function confirmChapter3() {
+            gameState.chapter3.simPassed = gameState.chapter3.impact >= 120;
+            sounds.build();
+            showScreen('chapter3QuizScreen');
+            startQuiz(3);
+        }
+
+        // ==================== QUIZ SYSTEM ====================
+        let currentQuiz = [];
+        let currentQuizIndex = 0;
+        let currentChapter = 1;
+        let quizAnswers = [];
+
+        function startQuiz(chapter) {
+            currentChapter = chapter;
+            currentQuizIndex = 0;
+            quizAnswers = [];
+
+            if (chapter === 1) currentQuiz = [...chapter1Quiz];
+            else if (chapter === 2) currentQuiz = [...chapter2Quiz];
+            else if (chapter === 3) currentQuiz = [...chapter3Quiz];
+            else currentQuiz = [...finalQuiz];
+
+            renderQuizProgress(chapter);
+            renderQuizQuestion(chapter);
+        }
+
+        function startFinalChallenge() {
+            if (!gameState.chapter3.completed) return;
+            sounds.click();
+            showScreen('finalChallengeScreen');
+            currentChapter = 4;
+            startQuiz(4);
+        }
+
+        function renderQuizProgress(chapter) {
+            const progressId = chapter === 4 ? 'quizFinalProgress' : `quiz${chapter}Progress`;
+            const container = document.getElementById(progressId);
+            container.innerHTML = '';
+
+            for (let i = 0; i < currentQuiz.length; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'quiz-dot';
+                if (i === currentQuizIndex) dot.classList.add('active');
+                if (quizAnswers[i] !== undefined) {
+                    dot.classList.add(quizAnswers[i] ? 'correct' : 'wrong');
+                }
+                container.appendChild(dot);
+            }
+        }
+
+        function renderQuizQuestion(chapter) {
+            const containerId = chapter === 4 ? 'quizFinalContainer' : `quiz${chapter}Container`;
+            const container = document.getElementById(containerId);
+            const q = currentQuiz[currentQuizIndex];
+
+            container.innerHTML = `
+                <div class="question-card">
+                    <div class="question-number">Question ${currentQuizIndex + 1} of ${currentQuiz.length}</div>
+                    <div class="question-text">${q.q}</div>
+                    <div class="answers-grid">
+                        ${q.options.map((opt, i) => `
+                            <button class="answer-btn" onclick="selectAnswer(${i}, ${chapter})">${opt}</button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectAnswer(answerIndex, chapter) {
+            const q = currentQuiz[currentQuizIndex];
+            const isCorrect = answerIndex === q.correct;
+            const buttons = document.querySelectorAll('.answer-btn');
+
+            buttons.forEach((btn, i) => {
+                btn.disabled = true;
+                if (i === q.correct) btn.classList.add('correct');
+                if (i === answerIndex && !isCorrect) btn.classList.add('wrong');
+            });
+
+            quizAnswers[currentQuizIndex] = isCorrect;
+
+            if (isCorrect) {
+                sounds.correct();
+                gameState.xp += 50;
+                gameState.streak++;
+                gameState.totalCorrect++;
+                updateXPDisplay();
+                showStreak();
+                spawnConfetti(5);
+            } else {
+                sounds.wrong();
+                gameState.streak = 0;
+                hideStreak();
+            }
+
+            gameState.totalQuestions++;
+
+            setTimeout(() => {
+                currentQuizIndex++;
+                if (currentQuizIndex >= currentQuiz.length) {
+                    finishQuiz(chapter);
+                } else {
+                    renderQuizProgress(chapter);
+                    renderQuizQuestion(chapter);
+                }
+            }, 1500);
+        }
+
+        function finishQuiz(chapter) {
+            const correct = quizAnswers.filter(a => a).length;
+            const total = currentQuiz.length;
+            const passed = correct >= 4;
+
+            if (chapter === 4) {
+                gameState.finalChallenge.score = Math.round((correct / total) * 100);
+                gameState.finalChallenge.completed = true;
+                showResults();
+                return;
+            }
+
+            const chapterKey = `chapter${chapter}`;
+            gameState[chapterKey].score = Math.round((correct / total) * 100);
+            gameState[chapterKey].completed = passed;
+
+            if (passed) {
+                sounds.levelUp();
+                gameState.xp += 200;
+                updateXPDisplay();
+                spawnConfetti(30);
+                showFeedback(
+                    true,
+                    `🎉 LEVEL ${chapter} COMPLETE!`,
+                    `You got ${correct}/${total} right! Amazing work, ${gameState.playerName}!`,
+                    () => {
+                        goToChapterSelect();
+                    }
+                );
+
+                // Check achievements
+                if (correct === 5 && !gameState.achievements.perfectQuiz) {
+                    gameState.achievements.perfectQuiz = true;
+                    setTimeout(() => showFeedback(true, '🏆 ACHIEVEMENT!', 'Perfect Quiz! You got all 5 right!', closeFeedback), 2000);
+                }
+            } else {
+                sounds.wrong();
+                showFeedback(
+                    false,
+                    '😅 Almost there!',
+                    `You got ${correct}/${total}. You need 4 to pass. Try the simulation again!`,
+                    () => {
+                        startChapter(chapter);
+                    }
+                );
+            }
+        }
+
+        // ==================== RESULTS ====================
+        function showResults() {
+            // Calculate final score
+            const simPassed = gameState.chapter1.simPassed && gameState.chapter2.simPassed && gameState.chapter3.simPassed;
+            const mcqScore = Math.round((gameState.totalCorrect / gameState.totalQuestions) * 100);
+            const passed = simPassed && mcqScore >= 65;
+
+            document.getElementById('finalScore').textContent = mcqScore + '%';
+            document.getElementById('questionsCorrect').textContent = `${gameState.totalCorrect}/${gameState.totalQuestions}`;
+            document.getElementById('totalXP').textContent = gameState.xp;
+
+            // Badge
+            let badge, badgeLabel;
+            if (mcqScore >= 90) { badge = '🏆'; badgeLabel = 'GOLD MAYOR'; }
+            else if (mcqScore >= 75) { badge = '🥈'; badgeLabel = 'SILVER MAYOR'; }
+            else if (mcqScore >= 65) { badge = '🥉'; badgeLabel = 'BRONZE MAYOR'; }
+            else { badge = '📜'; badgeLabel = 'TRAINEE'; }
+
+            document.getElementById('badgeIcon').textContent = badge;
+            document.getElementById('badgeLabel').textContent = badgeLabel;
+
+            // Claim code
+            if (passed) {
+                const tier = mcqScore >= 90 ? 'GOLD' : mcqScore >= 75 ? 'SILVER' : 'BRONZE';
+                const suffix = Math.random().toString(36).substring(2, 7).toUpperCase();
+                const code = `MCT-M1-${tier}-${suffix}`;
+                document.getElementById('claimCode').textContent = code;
+                document.getElementById('claimCodeSection').style.display = 'block';
+                sounds.victory();
+                spawnConfetti(50);
+            } else {
+                document.getElementById('claimCodeSection').style.display = 'none';
+            }
+
+            // Achievements
+            renderAchievements();
+
+            showScreen('resultsScreen');
+        }
+
+        function renderAchievements() {
+            const container = document.getElementById('achievementsContainer');
+            const achievements = [
+                { id: 'firstBuild', icon: '🏗️', name: 'First Build', unlocked: gameState.chapter1.completed },
+                { id: 'budgetMaster', icon: '💰', name: 'Budget Master', unlocked: gameState.chapter1.budget >= 20 },
+                { id: 'perfectQuiz', icon: '💯', name: 'Perfect Quiz', unlocked: gameState.achievements.perfectQuiz },
+                { id: 'economicsExpert', icon: '🎓', name: 'Economics Expert', unlocked: gameState.totalCorrect >= 15 },
+                { id: 'streakMaster', icon: '🔥', name: 'Streak x5', unlocked: gameState.streak >= 5 }
+            ];
+
+            container.innerHTML = achievements.map(a => `
+                <div class="achievement ${a.unlocked ? 'unlocked' : ''}">
+                    <div class="achievement-icon">${a.icon}</div>
+                    <div class="achievement-name">${a.name}</div>
+                </div>
+            `).join('');
+        }
+
+        function restartGame() {
+            gameState = {
+                playerName: gameState.playerName,
+                coins: 100,
+                xp: 0,
+                streak: 0,
+                chapter1: { completed: false, budget: 100, impact: 0, score: 0, simPassed: false },
+                chapter2: { completed: false, budget: 0, impact: 0, score: 0, simPassed: false },
+                chapter3: { completed: false, budget: 0, impact: 0, score: 0, simPassed: false },
+                finalChallenge: { completed: false, score: 0 },
+                totalCorrect: 0,
+                totalQuestions: 0,
+                soundEnabled: gameState.soundEnabled,
+                achievements: { ...gameState.achievements }
+            };
+            updateXPDisplay();
+            showScreen('chapterSelectScreen');
+            updateChapterCards();
+        }
+
+        // ==================== UTILITIES ====================
+        function updateXPDisplay() {
+            document.getElementById('xpDisplay').textContent = gameState.xp;
+            document.getElementById('coinsDisplay').textContent = gameState.chapter1.budget;
+        }
+
+        function showFeedback(success, title, text, callback) {
+            const overlay = document.getElementById('feedbackOverlay');
+            const card = document.getElementById('feedbackCard');
+            document.getElementById('feedbackIcon').textContent = success ? '🎉' : '😅';
+            document.getElementById('feedbackTitle').textContent = title;
+            document.getElementById('feedbackText').textContent = text;
+            card.className = `feedback-card ${success ? 'success' : 'fail'}`;
+
+            const btn = document.getElementById('feedbackBtn');
+            btn.onclick = () => {
+                closeFeedback();
+                if (callback) callback();
+            };
+
+            overlay.classList.add('active');
+        }
+
+        function closeFeedback() {
+            document.getElementById('feedbackOverlay').classList.remove('active');
+        }
+
+        function showStreak() {
+            if (gameState.streak >= 2) {
+                document.getElementById('streakCount').textContent = gameState.streak;
+                document.getElementById('streakDisplay').classList.add('active');
+            }
+        }
+
+        function hideStreak() {
+            document.getElementById('streakDisplay').classList.remove('active');
+        }
+
+        function spawnConfetti(count) {
+            const container = document.getElementById('confettiContainer');
+            const colors = ['#f472b6', '#22d3ee', '#fbbf24', '#10b981', '#6366f1'];
+
+            for (let i = 0; i < count; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                container.appendChild(confetti);
+
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        function addBuilding(cityViewId) {
+            const cityView = document.getElementById(cityViewId);
+            const building = document.createElement('div');
+            building.className = 'building active';
+            const height = 40 + Math.random() * 80;
+            const width = 20 + Math.random() * 30;
+            building.style.height = height + 'px';
+            building.style.width = width + 'px';
+
+            // Find the stars container and insert before it (or at beginning)
+            const stars = cityView.querySelector('.stars');
+            if (stars) {
+                cityView.insertBefore(building, null);
+            } else {
+                cityView.appendChild(building);
+            }
+        }
+
+        // Initialize the game
+        init();
+    </script>
+</body>
+</html>
