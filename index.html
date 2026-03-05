@@ -1066,6 +1066,13 @@
                     Become the MAYOR and make tough choices!<br>
                     Learn real economics while having a BLAST! 🚀
                 </p>
+                <div id="resumeBanner" style="display:none; background: rgba(99,102,241,0.3); border: 2px solid var(--primary); border-radius: 15px; padding: 20px; margin-bottom: 20px; text-align: center;">
+                    <p style="font-weight: 700; margin-bottom: 12px;">Welcome back, Mayor <span id="resumeName"></span>! Continue your city?</p>
+                    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn btn-success" id="resumeBtn" style="padding: 12px 24px; font-size: 1rem;">▶ Resume</button>
+                        <button class="btn" id="freshStartBtn" style="padding: 12px 24px; font-size: 1rem; background: rgba(255,255,255,0.1);">Start Fresh</button>
+                    </div>
+                </div>
                 <div class="name-input-container">
                     <input type="text" class="name-input" id="playerName" placeholder="Enter your Mayor name..." maxlength="20">
                 </div>
@@ -1164,7 +1171,10 @@
 
                 <div class="projects-grid" id="ch1Projects"></div>
 
-                <div style="text-align: center;">
+                <div style="text-align: center; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn" id="ch1UndoBtn" onclick="undoLastAction1()" disabled style="background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2);">
+                        ↩ Undo
+                    </button>
                     <button class="btn btn-success" id="ch1ConfirmBtn" onclick="confirmChapter1()" disabled>
                         BUILD MY CITY! 🏙️
                     </button>
@@ -1172,18 +1182,11 @@
             </div>
         </div>
 
-        <!-- Chapter 1 Quiz -->
-        <div class="screen" id="chapter1QuizScreen">
+        <!-- Debrief Screen (shared across all chapters) -->
+        <div class="screen" id="debriefScreen">
             <button class="back-btn" onclick="goToChapterSelect()">← Back to Missions</button>
-
             <div class="game-area">
-                <h2 class="game-title">📝 LEVEL 1 QUIZ TIME!</h2>
-                <p class="game-subtitle">Let's see what you learned about budgets and choices!</p>
-
-                <div class="quiz-container">
-                    <div class="quiz-progress" id="quiz1Progress"></div>
-                    <div id="quiz1Container"></div>
-                </div>
+                <div id="debriefContent"></div>
             </div>
         </div>
 
@@ -1222,14 +1225,17 @@
                     </div>
                 </div>
 
-                <div class="help-bubble">
+                <div class="help-bubble" id="ch2HelpBubble">
                     <span class="help-bubble-icon">🧠</span>
                     <strong>ECONOMICS FACT:</strong> This is called <strong>MARGINAL COST</strong> - each extra thing you do costs more than the last one!
                 </div>
 
                 <div class="projects-grid" id="ch2Projects"></div>
 
-                <div style="text-align: center;">
+                <div style="text-align: center; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn" id="ch2UndoBtn" onclick="undoLastAction2()" disabled style="background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2);">
+                        ↩ Undo
+                    </button>
                     <button class="btn btn-success" id="ch2ConfirmBtn" onclick="confirmChapter2()" disabled>
                         FINISH BUILDING! 🏗️
                     </button>
@@ -1237,20 +1243,6 @@
             </div>
         </div>
 
-        <!-- Chapter 2 Quiz -->
-        <div class="screen" id="chapter2QuizScreen">
-            <button class="back-btn" onclick="goToChapterSelect()">← Back to Missions</button>
-
-            <div class="game-area">
-                <h2 class="game-title">📝 LEVEL 2 QUIZ TIME!</h2>
-                <p class="game-subtitle">Time to prove you understand rising costs!</p>
-
-                <div class="quiz-container">
-                    <div class="quiz-progress" id="quiz2Progress"></div>
-                    <div id="quiz2Container"></div>
-                </div>
-            </div>
-        </div>
 
         <!-- Chapter 3 Simulation -->
         <div class="screen" id="chapter3SimScreen">
@@ -1280,7 +1272,7 @@
                     <div class="impact-target">Target: 120+ points to pass!</div>
                 </div>
 
-                <div class="help-bubble">
+                <div class="help-bubble" id="ch3HelpBubble">
                     <span class="help-bubble-icon">🤔</span>
                     <strong>THINK AHEAD:</strong> This is about <strong>OPTION VALUE</strong> - sometimes keeping your options open is smarter than going all-in!
                 </div>
@@ -1295,20 +1287,6 @@
             </div>
         </div>
 
-        <!-- Chapter 3 Quiz -->
-        <div class="screen" id="chapter3QuizScreen">
-            <button class="back-btn" onclick="goToChapterSelect()">← Back to Missions</button>
-
-            <div class="game-area">
-                <h2 class="game-title">📝 LEVEL 3 QUIZ TIME!</h2>
-                <p class="game-subtitle">Show us your strategic thinking!</p>
-
-                <div class="quiz-container">
-                    <div class="quiz-progress" id="quiz3Progress"></div>
-                    <div id="quiz3Container"></div>
-                </div>
-            </div>
-        </div>
 
         <!-- Final Challenge -->
         <div class="screen" id="finalChallengeScreen">
@@ -1385,13 +1363,18 @@
             coins: 100,
             xp: 0,
             streak: 0,
-            chapter1: { completed: false, budget: 100, impact: 0, score: 0, simPassed: false },
-            chapter2: { completed: false, budget: 0, impact: 0, score: 0, simPassed: false },
-            chapter3: { completed: false, budget: 0, impact: 0, score: 0, simPassed: false },
+            chapter1: { completed: false, budget: 100, impact: 0, score: 0, simPassed: false, synergyBonus: 0 },
+            chapter2: { completed: false, budget: 0, impact: 0, score: 0, simPassed: false, startingBudget: 60 },
+            chapter3: { completed: false, budget: 0, impact: 0, score: 0, simPassed: false, startingBudget: 40 },
             finalChallenge: { completed: false, score: 0 },
             totalCorrect: 0,
             totalQuestions: 0,
             soundEnabled: true,
+            cityMemory: {
+                builtRoads: false, builtSchools: false,
+                ch1Projects: [], ch1Leftover: 0,
+                ch2Projects: [], ch3Choice: null
+            },
             achievements: {
                 firstBuild: false,
                 budgetMaster: false,
@@ -1424,32 +1407,49 @@
 
         let audioCtx = null;
 
+        function initAudio() {
+            if (!audioCtx) {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                } catch(e) {
+                    gameState.soundEnabled = false;
+                }
+            } else if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
         function playTone(frequency, duration, type = 'sine', callback = null) {
             if (!gameState.soundEnabled) {
                 if (callback) setTimeout(callback, duration * 1000);
                 return;
             }
+            try {
+                if (!audioCtx) initAudio();
+                if (!audioCtx) { if (callback) setTimeout(callback, duration * 1000); return; }
 
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
 
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
 
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
+                oscillator.frequency.value = frequency;
+                oscillator.type = type;
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
 
-            oscillator.frequency.value = frequency;
-            oscillator.type = type;
-            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-
-            oscillator.start(audioCtx.currentTime);
-            oscillator.stop(audioCtx.currentTime + duration);
-
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + duration);
+            } catch(e) {
+                // Silently fail on low-memory devices or unsupported browsers
+            }
             if (callback) setTimeout(callback, duration * 1000);
         }
 
         function toggleSound() {
+            initAudio();
             gameState.soundEnabled = !gameState.soundEnabled;
             document.getElementById('soundToggle').textContent = gameState.soundEnabled ? '🔊' : '🔇';
         }
@@ -1475,133 +1475,117 @@
             { id: 'shortterm', name: 'Short-Term Improvements', icon: '✨', cost: 20, impact: 25, desc: 'Quick wins, keep options open!' }
         ];
 
-        // ==================== QUIZ DATA ====================
-        const chapter1Quiz = [
+        // ==================== CHAPTER 3 RANDOM EVENTS ====================
+        const chapter3Events = [
             {
-                q: "A city must choose between fixing roads OR building a new bus system because it can't afford both. What's this called?",
-                options: ["A) Incentives", "B) Budget constraint", "C) Marginal cost", "D) Revenue"],
-                correct: 1,
-                explanation: "When you can't have everything, that's a BUDGET CONSTRAINT!"
+                id: 'earthquake',
+                headline: '🌍 EARTHQUAKE HITS THE CITY!',
+                desc: 'A 5.2 magnitude earthquake shook your city! Emergency repairs needed.',
+                outcomes: {
+                    reserve: { text: 'Your Emergency Reserve fund covered all repair costs instantly! The city recovered fast. This is OPTION VALUE in action — you kept your options open!', impactBonus: 10 },
+                    longterm: { text: 'Your long-term infrastructure was damaged and took months to repair. Unexpected events can derail even the best long-term plans.', impactBonus: 0 },
+                    shortterm: { text: 'Your short-term improvements helped, but the city needed more reserves. Quick wins don\'t always prepare you for big surprises.', impactBonus: 3 }
+                }
             },
             {
-                q: "When a city picks schools instead of parks, what is the 'opportunity cost'?",
-                options: ["A) The money spent on schools", "B) The park they didn't choose", "C) Higher taxes", "D) Future penalties"],
-                correct: 1,
-                explanation: "Opportunity cost = what you GIVE UP when you choose something else!"
+                id: 'festival',
+                headline: '🎉 MAJOR SPORTS EVENT OPPORTUNITY!',
+                desc: 'A famous sports league wants to host an event in your city — but needs a venue upgrade!',
+                outcomes: {
+                    reserve: { text: 'You used your reserve fund to quickly upgrade the venue and won the bid! Your flexible budget was your greatest asset.', impactBonus: 8 },
+                    longterm: { text: 'Your long-term infrastructure impressed the league, and they\'ll consider you for future events. Long-term thinking pays off slowly but surely.', impactBonus: 5 },
+                    shortterm: { text: 'Your city looked good but lacked the reserves to act fast. The event went to a rival city this time.', impactBonus: 2 }
+                }
             },
             {
-                q: "Why do tradeoffs exist when making decisions?",
-                options: ["A) Rules punish spending", "B) Rules change a lot", "C) Resources are LIMITED", "D) Decisions are permanent"],
-                correct: 2,
-                explanation: "We can't have unlimited everything - that's why we must choose!"
-            },
-            {
-                q: "A city delays a project because choosing it would block other important projects. This shows:",
-                options: ["A) Revenue generation", "B) Opportunity cost", "C) Progressive penalties", "D) Incentives"],
-                correct: 1,
-                explanation: "They're thinking about what they'd LOSE - that's opportunity cost thinking!"
-            },
-            {
-                q: "What's a budget constraint?",
-                options: ["A) A rule that stops ALL spending", "B) A limit that forces choices", "C) A penalty for bad decisions", "D) A way to increase money"],
-                correct: 1,
-                explanation: "Budget constraint = you have limited resources, so you must CHOOSE!"
+                id: 'boom',
+                headline: '📈 ECONOMIC BOOM — NEW JOBS FLOODING IN!',
+                desc: 'A major company wants to open offices in your region. Can your city handle rapid growth?',
+                outcomes: {
+                    reserve: { text: 'Your reserve fund let you quickly build support services for the new workers. Flexible cities attract flexible businesses!', impactBonus: 7 },
+                    longterm: { text: 'Your long-term infrastructure was exactly what the company needed! Your bold investment paid off handsomely.', impactBonus: 12 },
+                    shortterm: { text: 'The short-term improvements helped, but the company wished you had more long-term capacity.', impactBonus: 4 }
+                }
             }
         ];
 
-        const chapter2Quiz = [
-            {
-                q: "Each new project becomes harder and MORE expensive than the last. What's this called?",
-                options: ["A) Budget constraint", "B) Opportunity cost", "C) Marginal cost", "D) Revenue"],
-                correct: 2,
-                explanation: "MARGINAL COST = the cost of doing ONE MORE thing!"
-            },
-            {
-                q: "Why might a system make later decisions MORE expensive?",
-                options: ["A) To punish people", "B) To encourage planning ahead", "C) Because money disappears", "D) To reward spending"],
-                correct: 1,
-                explanation: "Rising costs make you THINK before spending too fast!"
-            },
-            {
-                q: "When costs increase the more you spend, this is called:",
-                options: ["A) A fixed cost system", "B) A flat tax", "C) A progressive penalty system", "D) A revenue cap"],
-                correct: 2,
-                explanation: "PROGRESSIVE means it gets bigger as you go - like climbing stairs!"
-            },
-            {
-                q: "If rising costs make a city slow down spending, those costs are acting as:",
-                options: ["A) Revenue generator", "B) Random barrier", "C) Incentive", "D) Opportunity cost"],
-                correct: 2,
-                explanation: "INCENTIVES change behavior - rising costs incentivize careful spending!"
-            },
-            {
-                q: "Why is marginal cost important for the NEXT decision?",
-                options: ["A) Total cost doesn't matter", "B) It shows the cost of ONE MORE choice", "C) It includes past decisions", "D) It predicts revenue"],
-                correct: 1,
-                explanation: "Marginal cost tells you exactly what the NEXT thing will cost!"
-            }
-        ];
-
-        const chapter3Quiz = [
-            {
-                q: "A city delays a big project even though it looks good NOW. Why might this be smart?",
-                options: ["A) It lowers total spending", "B) It avoids opportunity cost", "C) It keeps future choices available", "D) It increases revenue"],
-                correct: 2,
-                explanation: "Staying flexible = OPTION VALUE! You keep your choices open!"
-            },
-            {
-                q: "When a city spends ALL its budget on one project, what do they lose MOST?",
-                options: ["A) Efficiency", "B) Flexibility", "C) Incentives", "D) Marginal cost"],
-                correct: 1,
-                explanation: "Going all-in means you can't change course later - bye bye FLEXIBILITY!"
-            },
-            {
-                q: "Why do long-term projects increase RISK compared to short-term ones?",
-                options: ["A) They always cost more", "B) They reduce ability to change later", "C) They require higher taxes", "D) They eliminate opportunity cost"],
-                correct: 1,
-                explanation: "Long commitments lock you in - harder to adapt to surprises!"
-            },
-            {
-                q: "A city picks a smaller project so they can handle emergencies later. This shows:",
-                options: ["A) Marginal cost", "B) Budget constraint", "C) Option value", "D) Progressive penalties"],
-                correct: 2,
-                explanation: "OPTION VALUE = the value of keeping your options open!"
-            },
-            {
-                q: "Which decision shows a TRADEOFF?",
-                options: ["A) Increasing the budget", "B) Choosing one project, rejecting another", "C) Saving all money", "D) Waiting forever"],
-                correct: 1,
-                explanation: "TRADEOFF = picking one thing means giving up something else!"
-            }
-        ];
-
+        // ==================== FINAL CHALLENGE DATA ====================
         const finalQuiz = [
             {
-                q: "Which concept explains why choosing one option means giving up another?",
-                options: ["A) Marginal cost", "B) Opportunity cost", "C) Revenue", "D) Incentives"],
-                correct: 1
+                q: "Mayor's Press Conference: A reporter asks — 'Your city had to choose between building a new hospital OR a new school. Why couldn't you build both?' What's the BEST answer?",
+                options: [
+                    "A) 'We ran out of ideas for the school'",
+                    "B) 'Our budget is limited, so we face a budget constraint — we can't have everything'",
+                    "C) 'Hospitals are always more important than schools'",
+                    "D) 'We'll build both next year for sure'"
+                ],
+                correct: 1,
+                explanation: "A BUDGET CONSTRAINT means limited resources force real choices. Every city, family, and government faces this!"
             },
             {
-                q: "Which concept focuses on the cost of making ONE additional decision?",
-                options: ["A) Opportunity cost", "B) Total cost", "C) Marginal cost", "D) Option value"],
-                correct: 2
+                q: "Mayor's Press Conference: 'Why did the THIRD road repair project cost so much more than the first one?' What do you say?",
+                options: [
+                    "A) 'Inflation affected prices'",
+                    "B) 'We made a mistake with the budget'",
+                    "C) 'Each additional project has a higher marginal cost — the more you do, the more each extra one costs'",
+                    "D) 'Road repair is just expensive'"
+                ],
+                correct: 2,
+                explanation: "MARGINAL COST = the cost of doing ONE MORE thing. In our game, each project raised costs by 1.5x!"
             },
             {
-                q: "Why do systems use penalties that INCREASE as behavior continues?",
-                options: ["A) To reward early decisions", "B) To make systems fair", "C) To influence future behavior", "D) To increase revenue"],
-                correct: 2
-            },
-            {
-                q: "Which idea explains why flexibility can be MORE valuable than quick wins?",
-                options: ["A) Marginal cost", "B) Revenue", "C) Option value", "D) Budget constraint"],
-                correct: 2
-            },
-            {
-                q: "A city saves resources so it can respond to unexpected events. Which concept explains this?",
-                options: ["A) Opportunity cost", "B) Marginal cost", "C) Option value", "D) Progressive penalties"],
-                correct: 2
+                q: "Mayor's Press Conference: 'Why did you choose the Emergency Reserve instead of the big long-term bridge project?' What's your answer?",
+                options: [
+                    "A) 'Bridges are too risky'",
+                    "B) 'We kept our options open — that flexibility has real value called option value'",
+                    "C) 'We ran out of coins'",
+                    "D) 'Emergency reserves always score more points'"
+                ],
+                correct: 1,
+                explanation: "OPTION VALUE = keeping your options open has real economic value, especially when the future is uncertain!"
             }
         ];
+
+        // ==================== PERSISTENCE ====================
+        function saveState() {
+            try {
+                localStorage.setItem('megaCityTycoon_v2', JSON.stringify({
+                    gameState,
+                    ch1Selected,
+                    ch2Selected,
+                    ch3Selected,
+                    savedAt: Date.now()
+                }));
+            } catch(e) { /* localStorage unavailable in some school environments */ }
+        }
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem('megaCityTycoon_v2');
+                if (!raw) return false;
+                const data = JSON.parse(raw);
+                if (Date.now() - data.savedAt > 4 * 60 * 60 * 1000) {
+                    localStorage.removeItem('megaCityTycoon_v2');
+                    return false;
+                }
+                return data;
+            } catch(e) { return false; }
+        }
+
+        function resumeGame(data) {
+            gameState = data.gameState;
+            ch1Selected = data.ch1Selected || [];
+            ch2Selected = data.ch2Selected || [];
+            ch3Selected = data.ch3Selected || null;
+            updateXPDisplay();
+            showScreen('chapterSelectScreen');
+            updateChapterCards();
+        }
+
+        function clearSavedGame() {
+            try { localStorage.removeItem('megaCityTycoon_v2'); } catch(e) {}
+            document.getElementById('resumeBanner').style.display = 'none';
+        }
 
         // ==================== INITIALIZATION ====================
         function init() {
@@ -1614,6 +1598,21 @@
             document.getElementById('playerName').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') startGame();
             });
+
+            // Check for saved session
+            const saved = loadState();
+            if (saved && saved.gameState && saved.gameState.playerName) {
+                const banner = document.getElementById('resumeBanner');
+                document.getElementById('resumeName').textContent = saved.gameState.playerName;
+                banner.style.display = 'block';
+                document.getElementById('resumeBtn').onclick = () => {
+                    banner.style.display = 'none';
+                    resumeGame(saved);
+                };
+                document.getElementById('freshStartBtn').onclick = () => {
+                    clearSavedGame();
+                };
+            }
         }
 
         function createBackground() {
@@ -1650,10 +1649,19 @@
             document.getElementById(screenId).classList.add('active');
         }
 
+        function sanitizeName(raw) {
+            const stripped = raw.replace(/<[^>]*>/g, '').trim();
+            const cleaned = stripped.replace(/[^a-zA-Z0-9 '\-]/g, '').trim();
+            if (cleaned.length < 1) return 'Mayor';
+            return cleaned.length > 20 ? cleaned.substring(0, 20) : cleaned;
+        }
+
         function startGame() {
-            const name = document.getElementById('playerName').value.trim() || 'Mayor';
-            gameState.playerName = name;
+            initAudio();
+            const raw = document.getElementById('playerName').value;
+            gameState.playerName = sanitizeName(raw);
             sounds.levelUp();
+            saveState();
             showScreen('chapterSelectScreen');
             updateChapterCards();
         }
@@ -1713,27 +1721,36 @@
 
         // ==================== CHAPTER 1 ====================
         let ch1Selected = [];
+        let ch1UndoStack = [];
 
         function startChapter(chapter) {
             if (chapter === 1) {
                 sounds.click();
                 ch1Selected = [];
+                ch1UndoStack = [];
                 gameState.chapter1.budget = 100;
                 gameState.chapter1.impact = 0;
+                gameState.chapter1.synergyBonus = 0;
                 renderChapter1Projects();
                 showScreen('chapter1SimScreen');
             } else if (chapter === 2 && gameState.chapter1.completed) {
                 sounds.click();
                 ch2Selected = [];
+                ch2PurchasedCosts = {};
+                ch2UndoStack = [];
                 ch2Multiplier = 1;
-                gameState.chapter2.budget = gameState.chapter1.budget;
+                const ch1Surplus = Math.max(0, gameState.chapter1.budget);
+                gameState.chapter2.budget = 60 + Math.floor(ch1Surplus * 0.5);
+                gameState.chapter2.startingBudget = gameState.chapter2.budget;
                 gameState.chapter2.impact = gameState.chapter1.impact;
                 renderChapter2Projects();
                 showScreen('chapter2SimScreen');
             } else if (chapter === 3 && gameState.chapter2.completed) {
                 sounds.click();
                 ch3Selected = null;
-                gameState.chapter3.budget = gameState.chapter2.budget;
+                const ch2Surplus = Math.max(0, gameState.chapter2.budget);
+                gameState.chapter3.budget = 40 + Math.floor(ch2Surplus * 0.5);
+                gameState.chapter3.startingBudget = gameState.chapter3.budget;
                 gameState.chapter3.impact = gameState.chapter2.impact;
                 renderChapter3Options();
                 showScreen('chapter3SimScreen');
@@ -1743,10 +1760,22 @@
         function renderChapter1Projects() {
             const container = document.getElementById('ch1Projects');
             container.innerHTML = '';
+            const roadsBuilt = ch1Selected.includes('roads');
 
             chapter1Projects.forEach(project => {
                 const isSelected = ch1Selected.includes(project.id);
                 const canAfford = project.cost <= gameState.chapter1.budget || isSelected;
+
+                // Synergy tag logic
+                let synergyTag = '';
+                if (project.id === 'schools') {
+                    if (roadsBuilt && isSelected) synergyTag = '<div style="color:#22d3ee;font-size:0.8rem;margin-top:4px;">✨ +5 synergy bonus active!</div>';
+                    else if (!roadsBuilt) synergyTag = '<div style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin-top:4px;">💡 Build Roads first for +5 bonus!</div>';
+                }
+                if (project.id === 'transit') {
+                    if (roadsBuilt && isSelected) synergyTag = '<div style="color:#22d3ee;font-size:0.8rem;margin-top:4px;">✨ +3 synergy bonus active!</div>';
+                    else if (!roadsBuilt) synergyTag = '<div style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin-top:4px;">💡 Build Roads first for +3 bonus!</div>';
+                }
 
                 const card = document.createElement('div');
                 card.className = `project-card ${isSelected ? 'selected' : ''} ${!canAfford ? 'disabled' : ''}`;
@@ -1760,6 +1789,7 @@
                     <div class="project-name">${project.name}</div>
                     <div class="project-impact">${project.desc}</div>
                     <div class="project-impact">Impact: <span class="project-impact-value">+${project.impact} pts</span></div>
+                    ${synergyTag}
                 `;
                 container.appendChild(card);
             });
@@ -1769,19 +1799,45 @@
 
         function toggleProject1(project) {
             const idx = ch1Selected.indexOf(project.id);
+
+            // Push undo snapshot before changing state
+            ch1UndoStack.push({ selectedBefore: [...ch1Selected], budgetBefore: gameState.chapter1.budget, impactBefore: gameState.chapter1.impact });
+
             if (idx > -1) {
                 ch1Selected.splice(idx, 1);
                 gameState.chapter1.budget += project.cost;
                 gameState.chapter1.impact -= project.impact;
+                // Remove synergy bonus if roads deselected
+                recalcCh1Synergy();
                 sounds.click();
             } else if (project.cost <= gameState.chapter1.budget) {
                 ch1Selected.push(project.id);
                 gameState.chapter1.budget -= project.cost;
                 gameState.chapter1.impact += project.impact;
+                // Apply synergy bonuses
+                const gained = recalcCh1Synergy();
+                if (gained > 0) showToast('✨ Synergy! +' + gained + ' bonus impact!');
                 sounds.coin();
                 addBuilding('cityView1');
+            } else {
+                ch1UndoStack.pop(); // no state change, remove the snapshot
             }
+            saveState();
             renderChapter1Projects();
+        }
+
+        function recalcCh1Synergy() {
+            // Returns net synergy points gained this call
+            let newSynergy = 0;
+            if (ch1Selected.includes('roads')) {
+                if (ch1Selected.includes('schools')) newSynergy += 5;
+                if (ch1Selected.includes('transit')) newSynergy += 3;
+            }
+            const prev = gameState.chapter1.synergyBonus || 0;
+            const delta = newSynergy - prev;
+            gameState.chapter1.impact += delta;
+            gameState.chapter1.synergyBonus = newSynergy;
+            return delta > 0 ? delta : 0;
         }
 
         function updateChapter1Display() {
@@ -1796,31 +1852,78 @@
             if (pct < 30) bar.classList.add('danger');
             else if (pct < 50) bar.classList.add('warning');
 
-            const btn = document.getElementById('ch1ConfirmBtn');
-            btn.disabled = ch1Selected.length === 0;
+            document.getElementById('ch1ConfirmBtn').disabled = ch1Selected.length === 0;
+            document.getElementById('ch1UndoBtn').disabled = ch1UndoStack.length === 0;
+        }
+
+        function undoLastAction1() {
+            if (ch1UndoStack.length === 0) return;
+            const snap = ch1UndoStack.pop();
+            ch1Selected = snap.selectedBefore;
+            gameState.chapter1.budget = snap.budgetBefore;
+            gameState.chapter1.impact = snap.impactBefore;
+            gameState.chapter1.synergyBonus = 0;
+            // Recalc synergy from scratch based on restored selection (no delta toast)
+            let syn = 0;
+            if (ch1Selected.includes('roads')) {
+                if (ch1Selected.includes('schools')) syn += 5;
+                if (ch1Selected.includes('transit')) syn += 3;
+            }
+            gameState.chapter1.synergyBonus = syn;
+            sounds.click();
+            renderChapter1Projects();
+        }
+
+        function undoLastAction2() {
+            if (ch2UndoStack.length === 0) return;
+            const snap = ch2UndoStack.pop();
+            ch2Selected = snap.selectedBefore;
+            ch2PurchasedCosts = snap.purchasedCostsBefore;
+            gameState.chapter2.budget = snap.budgetBefore;
+            gameState.chapter2.impact = snap.impactBefore;
+            ch2Multiplier = snap.multiplierBefore;
+            sounds.click();
+            renderChapter2Projects();
         }
 
         function confirmChapter1() {
             gameState.chapter1.simPassed = gameState.chapter1.impact >= 60;
+            gameState.cityMemory.builtRoads = ch1Selected.includes('roads');
+            gameState.cityMemory.builtSchools = ch1Selected.includes('schools');
+            gameState.cityMemory.ch1Projects = [...ch1Selected];
+            gameState.cityMemory.ch1Leftover = gameState.chapter1.budget;
             sounds.build();
-            showScreen('chapter1QuizScreen');
-            startQuiz(1);
+            showDebriefScreen(1);
         }
 
         // ==================== CHAPTER 2 ====================
         let ch2Selected = [];
         let ch2Multiplier = 1;
+        let ch2PurchasedCosts = {};
+        let ch2UndoStack = [];
 
         function renderChapter2Projects() {
             const container = document.getElementById('ch2Projects');
             container.innerHTML = '';
 
+            // Cross-chapter narrative
+            const bubble = document.getElementById('ch2HelpBubble');
+            if (bubble) {
+                const mem = gameState.cityMemory;
+                let narrative = '';
+                if (mem.builtRoads && mem.builtSchools) narrative = `Your Chapter 1 schools and roads created a great foundation! Now the city is growing and costs are rising...`;
+                else if (!mem.builtRoads) narrative = `Without roads from Chapter 1, city growth is bumpier — infrastructure gaps are expensive to fix later!`;
+                else if (mem.ch1Leftover > 30) narrative = `Your careful Chapter 1 budgeting gave you extra coins to start with here. Planning ahead pays off!`;
+                else narrative = `The city is growing fast! Each new project costs more than the last — that\'s <strong>MARGINAL COST</strong>!`;
+                bubble.innerHTML = `<span class="help-bubble-icon">🧠</span> ${narrative}`;
+            }
+
             document.getElementById('ch2Budget').textContent = gameState.chapter2.budget;
             document.getElementById('ch2Impact').textContent = gameState.chapter2.impact;
             document.getElementById('ch2Multiplier').textContent = ch2Multiplier.toFixed(1) + 'x';
 
-            const initialBudget = gameState.chapter1.budget;
-            const pct = (gameState.chapter2.budget / initialBudget) * 100;
+            const initialBudget = gameState.chapter2.startingBudget || Math.max(1, gameState.chapter2.budget);
+            const pct = Math.min(100, (gameState.chapter2.budget / initialBudget) * 100);
             document.getElementById('ch2BudgetBar').style.width = pct + '%';
 
             chapter2Projects.forEach(project => {
@@ -1845,35 +1948,44 @@
             });
 
             document.getElementById('ch2ConfirmBtn').disabled = ch2Selected.length === 0;
+            const undoBtn2 = document.getElementById('ch2UndoBtn');
+            if (undoBtn2) undoBtn2.disabled = ch2UndoStack.length === 0;
         }
 
         function toggleProject2(project) {
             const idx = ch2Selected.indexOf(project.id);
             const currentCost = Math.round(project.baseCost * ch2Multiplier);
 
+            ch2UndoStack.push({ selectedBefore: [...ch2Selected], purchasedCostsBefore: {...ch2PurchasedCosts}, budgetBefore: gameState.chapter2.budget, impactBefore: gameState.chapter2.impact, multiplierBefore: ch2Multiplier });
+
             if (idx > -1) {
-                const paidCost = Math.round(project.baseCost * (ch2Multiplier / 1.5));
+                const paidCost = ch2PurchasedCosts[project.id] || currentCost;
                 ch2Selected.splice(idx, 1);
+                delete ch2PurchasedCosts[project.id];
                 ch2Multiplier = Math.max(1, ch2Multiplier / 1.5);
                 gameState.chapter2.budget += paidCost;
                 gameState.chapter2.impact -= project.impact;
                 sounds.click();
             } else if (currentCost <= gameState.chapter2.budget) {
                 ch2Selected.push(project.id);
+                ch2PurchasedCosts[project.id] = currentCost;
                 gameState.chapter2.budget -= currentCost;
                 gameState.chapter2.impact += project.impact;
                 ch2Multiplier *= 1.5;
                 sounds.coin();
                 addBuilding('cityView2');
+            } else {
+                ch2UndoStack.pop();
             }
+            saveState();
             renderChapter2Projects();
         }
 
         function confirmChapter2() {
             gameState.chapter2.simPassed = gameState.chapter2.impact >= 100;
+            gameState.cityMemory.ch2Projects = [...ch2Selected];
             sounds.build();
-            showScreen('chapter2QuizScreen');
-            startQuiz(2);
+            showDebriefScreen(2);
         }
 
         // ==================== CHAPTER 3 ====================
@@ -1883,11 +1995,22 @@
             const container = document.getElementById('ch3Projects');
             container.innerHTML = '';
 
+            // Cross-chapter narrative
+            const bubble3 = document.getElementById('ch3HelpBubble');
+            if (bubble3) {
+                const mem = gameState.cityMemory;
+                let narrative3 = '';
+                if (mem.ch2Projects && mem.ch2Projects.includes('water')) narrative3 = `Your water systems from Chapter 2 gave your city stability. Now comes the BIG master plan choice — think about <strong>OPTION VALUE</strong>!`;
+                else if (mem.builtRoads && mem.builtSchools) narrative3 = `Chapter 1 schools and roads, Chapter 2 growth — your city has a strong foundation. This final choice will shape everything!`;
+                else narrative3 = `This is your biggest decision yet! Sometimes keeping your options open — <strong>OPTION VALUE</strong> — is smarter than going all-in on one thing.`;
+                bubble3.innerHTML = `<span class="help-bubble-icon">🤔</span> ${narrative3}`;
+            }
+
             document.getElementById('ch3Budget').textContent = gameState.chapter3.budget;
             document.getElementById('ch3Impact').textContent = gameState.chapter3.impact;
 
-            const initialBudget = gameState.chapter1.budget;
-            const pct = (gameState.chapter3.budget / initialBudget) * 100;
+            const initialBudget = gameState.chapter3.startingBudget || Math.max(1, gameState.chapter3.budget);
+            const pct = Math.min(100, (gameState.chapter3.budget / initialBudget) * 100);
             document.getElementById('ch3BudgetBar').style.width = pct + '%';
 
             chapter3Options.forEach(option => {
@@ -1933,72 +2056,340 @@
                 sounds.coin();
             }
 
+            saveState();
             renderChapter3Options();
         }
 
         function confirmChapter3() {
             gameState.chapter3.simPassed = gameState.chapter3.impact >= 120;
+            gameState.cityMemory.ch3Choice = ch3Selected;
             sounds.build();
-            showScreen('chapter3QuizScreen');
-            startQuiz(3);
+            showDebriefScreen(3);
         }
 
-        // ==================== QUIZ SYSTEM ====================
+        // ==================== DEBRIEF SYSTEM ====================
+        let currentDebriefChapter = 0;
+        let debriefAnswered = false;
+
+        function showDebriefScreen(chapter) {
+            currentDebriefChapter = chapter;
+            debriefAnswered = false;
+            const debrief = generateDebrief(chapter);
+            renderDebrief(debrief, chapter);
+            showScreen('debriefScreen');
+        }
+
+        function generateDebrief(chapter) {
+            if (chapter === 1) {
+                const built = chapter1Projects.filter(p => ch1Selected.includes(p.id));
+                const skipped = chapter1Projects.filter(p => !ch1Selected.includes(p.id));
+                const leftover = gameState.chapter1.budget;
+                const synergy = gameState.chapter1.synergyBonus || 0;
+
+                let headline = built.length === 0 ? 'An empty city... 😬' :
+                    leftover > 40 ? 'A cautious mayor — lots left in the budget!' :
+                    leftover < 10 ? 'A bold mayor — you spent almost everything!' :
+                    `A city taking shape — ${built.length} project${built.length > 1 ? 's' : ''} underway!`;
+
+                let consequences = [];
+                if (built.find(p => p.id === 'roads') && built.find(p => p.id === 'transit')) consequences.push('Roads AND transit — your city moves well!');
+                if (!built.find(p => p.id === 'emergency')) consequences.push('No emergency services yet — hope nothing goes wrong...');
+                if (built.find(p => p.id === 'schools') && !built.find(p => p.id === 'parks')) consequences.push('Schools without parks — education focus, but kids need somewhere to play!');
+                if (built.find(p => p.id === 'roads') && built.find(p => p.id === 'schools')) consequences.push('Roads + Schools combo unlocked a synergy bonus — infrastructure supports everything!');
+                if (consequences.length === 0) consequences.push('Your choices shaped this city\'s first chapter.');
+
+                const skippedNames = skipped.map(p => p.name).join(', ');
+                let reflectionQ, reflectionOptions;
+                if (skipped.length > 0) {
+                    reflectionQ = `You chose NOT to build: ${skippedNames}. What's the economic term for the value of those things you gave up?`;
+                    reflectionOptions = [
+                        { text: 'Opportunity Cost — the value of what you give up when you make a choice', isKey: true, insight: 'Exactly! Every choice you made had an opportunity cost — the next best thing you gave up. That\'s how real cities think too!' },
+                        { text: 'Marginal Cost — the extra cost of building one more project', isKey: false, insight: 'Marginal cost is about extra costs as you build more — not quite what describes the skipped projects. The term for what you gave up is Opportunity Cost!' },
+                        { text: 'Budget Constraint — the limit on how much you can spend', isKey: false, insight: 'Budget constraint is why you couldn\'t build everything — but the value of what you gave up is called Opportunity Cost. Both concepts worked together here!' }
+                    ];
+                } else {
+                    reflectionQ = 'You built everything! But you had to spend all your coins. What forced you to make choices about WHICH to build first?';
+                    reflectionOptions = [
+                        { text: 'Budget Constraint — your limited coins forced real choices', isKey: true, insight: 'Yes! Even when you want to build everything, the budget constraint is always there. Real cities face the same thing every year!' },
+                        { text: 'Opportunity Cost — you gave up nothing so it doesn\'t apply', isKey: false, insight: 'Actually, even when you build everything, you still faced opportunity cost — you gave up the chance to save coins or invest elsewhere. The budget constraint shaped your choices too!' },
+                        { text: 'Marginal Cost — each project cost more than the last', isKey: false, insight: 'In Chapter 1, costs stayed flat. The budget constraint — your limited 100 coins — is what forced your choices!' }
+                    ];
+                }
+
+                return {
+                    chapter: 1, headline, consequences, synergy,
+                    built: built.map(p => `${p.icon} ${p.name} (+${p.impact} impact)`),
+                    leftover,
+                    reflectionQ, reflectionOptions,
+                    conceptCard: {
+                        term: 'Budget Constraint',
+                        icon: '💰',
+                        definition: 'You had 100 coins but could only spend so much. That limit — called a <strong>budget constraint</strong> — forces every mayor, family, and government to make tradeoffs.',
+                        realWorld: 'Every city council meeting involves budget constraints. Your choices today mirror real decisions made in real cities!'
+                    },
+                    passed: gameState.chapter1.simPassed
+                };
+            }
+
+            if (chapter === 2) {
+                const built = chapter2Projects.filter(p => ch2Selected.includes(p.id));
+                const finalMultiplier = ch2Multiplier.toFixed(1);
+                const ch1Ref = gameState.cityMemory.builtRoads ? 'the roads you built in Chapter 1 helped lay the groundwork' : 'without roads from Chapter 1, growth was bumpier';
+
+                let consequences = [];
+                if (ch2Selected.length === 0) consequences.push('No projects built — the city stagnated.');
+                else if (ch2Selected.length === 1) consequences.push('One project at base cost — conservative but safe!');
+                else consequences.push(`Each purchase raised costs by 1.5x. Your final multiplier: ${finalMultiplier}x — you saw marginal cost rise in real time!`);
+                consequences.push(`Remember: ${ch1Ref}.`);
+
+                return {
+                    chapter: 2,
+                    headline: ch2Selected.length === 0 ? 'A city at a standstill...' : `${built.length} project${built.length > 1 ? 's' : ''} built as costs climbed!`,
+                    consequences,
+                    built: built.map(p => `${p.icon} ${p.name} (cost: ${ch2PurchasedCosts[p.id] || p.baseCost} coins)`),
+                    leftover: gameState.chapter2.budget,
+                    reflectionQ: 'In Chapter 2, each project you bought made the NEXT one cost 1.5x more. What economic concept does this represent?',
+                    reflectionOptions: [
+                        { text: 'Marginal Cost — the rising cost of doing one more thing', isKey: true, insight: 'Perfect! Marginal cost is the cost of one additional action. In real cities, the 10th pothole fixed costs more than the 1st because resources get scarcer!' },
+                        { text: 'Budget Constraint — your limited budget from Chapter 1', isKey: false, insight: 'Budget constraint is the limit itself — but the reason each project got more expensive as you bought more is called Marginal Cost. Both were at work here!' },
+                        { text: 'Option Value — keeping your choices open for later', isKey: false, insight: 'Option value is about flexibility for future decisions. The rising cost pattern you experienced is Marginal Cost — each extra action costs more than the last!' }
+                    ],
+                    conceptCard: {
+                        term: 'Marginal Cost',
+                        icon: '📈',
+                        definition: '<strong>Marginal cost</strong> is the cost of doing <em>one more</em> thing. In your city, each extra project cost 1.5x more than the last — just like real-world infrastructure where later projects are harder than early ones.',
+                        realWorld: 'Real economists use marginal cost to decide when to stop expanding. When the cost of one more unit exceeds its benefit, it\'s time to stop!'
+                    },
+                    passed: gameState.chapter2.simPassed
+                };
+            }
+
+            if (chapter === 3) {
+                const choice = chapter3Options.find(o => o.id === ch3Selected);
+                const event = chapter3Events[Math.floor(Math.random() * chapter3Events.length)];
+                const outcome = event ? event.outcomes[ch3Selected] : null;
+
+                if (outcome && event) {
+                    gameState.chapter3.impact += outcome.impactBonus;
+                    gameState.chapter3.simPassed = gameState.chapter3.impact >= 120;
+                }
+
+                const ch2Ref = gameState.cityMemory.ch2Projects.length > 0
+                    ? `Your Chapter 2 investments (${gameState.cityMemory.ch2Projects.join(', ')}) built a foundation for this moment`
+                    : 'Starting from a lean Chapter 2, this decision carries extra weight';
+
+                let counterfactual = '';
+                if (event && ch3Selected === 'reserve') {
+                    const ltOutcome = event.outcomes.longterm;
+                    counterfactual = `If you had chosen Long-Term Infrastructure: "${ltOutcome.text}"`;
+                } else if (event && ch3Selected === 'longterm') {
+                    const resOutcome = event.outcomes.reserve;
+                    counterfactual = `If you had chosen Emergency Reserve: "${resOutcome.text}"`;
+                } else if (event && ch3Selected === 'shortterm') {
+                    const resOutcome = event.outcomes.reserve;
+                    counterfactual = `If you had chosen Emergency Reserve: "${resOutcome.text}"`;
+                }
+
+                return {
+                    chapter: 3,
+                    headline: choice ? `You chose: ${choice.icon} ${choice.name}` : 'No choice made...',
+                    consequences: [ch2Ref + '.'],
+                    built: choice ? [`${choice.icon} ${choice.name} — ${choice.desc}`] : [],
+                    leftover: gameState.chapter3.budget,
+                    event, outcome, counterfactual,
+                    reflectionQ: 'You made ONE big city decision. What is the economic value of choosing a path that keeps future options available?',
+                    reflectionOptions: [
+                        { text: 'Option Value — flexibility itself has economic worth', isKey: true, insight: 'Exactly! Option value is the economic value of being able to change course. The Emergency Reserve scores lower now but protects against future surprises — that protection is worth something!' },
+                        { text: 'Marginal Cost — each choice costs more than the last', isKey: false, insight: 'Marginal cost is about rising costs per action. But the value of keeping future choices available is called Option Value — and it\'s a key concept in real-world economic planning!' },
+                        { text: 'Budget Constraint — you were limited by your remaining coins', isKey: false, insight: 'Budget constraint explains why you couldn\'t do everything. But the specific value of keeping choices open — especially under uncertainty — is called Option Value!' }
+                    ],
+                    conceptCard: {
+                        term: 'Option Value',
+                        icon: '🎯',
+                        definition: '<strong>Option value</strong> is the economic benefit of keeping your choices open. Sometimes a smaller, more flexible plan beats a big commitment — because the future is uncertain.',
+                        realWorld: 'Real governments use option value thinking when deciding whether to commit to expensive long-term projects. Sometimes waiting and staying flexible IS the right economic choice!'
+                    },
+                    passed: gameState.chapter3.simPassed
+                };
+            }
+
+            return null;
+        }
+
+        function renderDebrief(debrief, chapter) {
+            if (!debrief) return;
+            const container = document.getElementById('debriefContent');
+
+            const chapterNames = ['', 'Budget Basics', 'Rising Costs', 'Master Plan'];
+            const chapterColors = ['', 'var(--primary)', 'var(--danger)', 'var(--gold)'];
+
+            let eventHTML = '';
+            if (chapter === 3 && debrief.event && debrief.outcome) {
+                eventHTML = `
+                    <div style="background: rgba(251,191,36,0.15); border: 2px solid var(--gold); border-radius: 15px; padding: 20px; margin-bottom: 20px; text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--gold); margin-bottom: 10px;">${debrief.event.headline}</div>
+                        <p style="margin-bottom: 12px; color: rgba(255,255,255,0.9);">${debrief.event.desc}</p>
+                        <div style="background: rgba(16,185,129,0.15); border: 1px solid var(--success); border-radius: 10px; padding: 15px; margin-bottom: 10px;">
+                            <strong style="color: var(--success);">What happened to your city:</strong><br>
+                            <span style="color: rgba(255,255,255,0.9);">${debrief.outcome.text}</span>
+                            ${debrief.outcome.impactBonus > 0 ? `<div style="color: var(--gold); font-weight: 700; margin-top: 8px;">+${debrief.outcome.impactBonus} bonus impact earned!</div>` : ''}
+                        </div>
+                        ${debrief.counterfactual ? `<div style="background: rgba(255,255,255,0.05); border-radius: 10px; padding: 12px; font-size: 0.9rem; color: rgba(255,255,255,0.6);"><em>${debrief.counterfactual}</em></div>` : ''}
+                    </div>
+                `;
+            }
+
+            let synergyHTML = '';
+            if (chapter === 1 && debrief.synergy > 0) {
+                synergyHTML = `<div style="background: rgba(34,211,238,0.15); border: 1px solid var(--secondary); border-radius: 10px; padding: 12px; margin-bottom: 12px; font-size: 0.95rem;">✨ <strong>Synergy bonus earned: +${debrief.synergy} impact!</strong> Roads made your other projects more effective.</div>`;
+            }
+
+            container.innerHTML = `
+                <h2 class="game-title" style="color: ${chapterColors[chapter]};">📊 LEVEL ${chapter} DEBRIEF: ${chapterNames[chapter].toUpperCase()}</h2>
+                <p class="game-subtitle" style="margin-bottom: 24px;">${debrief.headline}</p>
+
+                <div style="display: grid; gap: 16px; margin-bottom: 24px;">
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 15px; padding: 20px;">
+                        <h3 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--secondary);">🏗️ What You Built:</h3>
+                        ${debrief.built.length > 0
+                            ? debrief.built.map(b => `<div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">${b}</div>`).join('')
+                            : '<div style="color: rgba(255,255,255,0.5);">Nothing built this round.</div>'}
+                        <div style="margin-top: 10px; font-size: 0.9rem; color: rgba(255,255,255,0.6);">Budget remaining: ${debrief.leftover} coins</div>
+                        ${synergyHTML}
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 15px; padding: 20px;">
+                        <h3 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--accent);">💡 What This Means:</h3>
+                        ${debrief.consequences.map(c => `<p style="margin-bottom: 8px; color: rgba(255,255,255,0.85);">• ${c}</p>`).join('')}
+                    </div>
+                </div>
+
+                ${eventHTML}
+
+                <div style="background: rgba(99,102,241,0.15); border: 2px solid var(--primary); border-radius: 15px; padding: 20px; margin-bottom: 24px;">
+                    <h3 style="margin-bottom: 16px; font-size: 1.1rem;">🤔 Reflect: ${debrief.reflectionQ}</h3>
+                    <div id="debriefOptions" style="display: flex; flex-direction: column; gap: 10px;">
+                        ${debrief.reflectionOptions.map((opt, i) => `
+                            <button class="answer-btn" onclick="selectDebriefAnswer(${i}, ${chapter})" style="text-align: left; padding: 14px 18px;">${opt.text}</button>
+                        `).join('')}
+                    </div>
+                    <div id="debriefInsight" style="display: none; margin-top: 16px; background: rgba(16,185,129,0.15); border: 1px solid var(--success); border-radius: 10px; padding: 15px;"></div>
+                </div>
+
+                <div style="background: rgba(251,191,36,0.1); border: 2px solid var(--gold); border-radius: 15px; padding: 20px; margin-bottom: 24px;">
+                    <div style="font-size: 1.3rem; margin-bottom: 8px;">${debrief.conceptCard.icon} <strong style="color: var(--gold);">Did You Know? — ${debrief.conceptCard.term}</strong></div>
+                    <p style="color: rgba(255,255,255,0.9); margin-bottom: 10px;">${debrief.conceptCard.definition}</p>
+                    <p style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">🌍 Real World: ${debrief.conceptCard.realWorld}</p>
+                </div>
+
+                <div style="text-align: center;">
+                    <button class="btn btn-success" id="debriefContinueBtn" onclick="finishDebrief(${chapter})" style="display: none;">
+                        CONTINUE TO NEXT LEVEL! →
+                    </button>
+                    <p id="debriefAnswerPrompt" style="color: rgba(255,255,255,0.6); font-size: 0.95rem;">Answer the reflection question above to continue!</p>
+                </div>
+            `;
+
+            // Store debrief data for selectDebriefAnswer
+            window._currentDebrief = debrief;
+        }
+
+        function selectDebriefAnswer(idx, chapter) {
+            if (debriefAnswered) return;
+            debriefAnswered = true;
+
+            const debrief = window._currentDebrief;
+            const opt = debrief.reflectionOptions[idx];
+
+            const buttons = document.querySelectorAll('#debriefOptions .answer-btn');
+            buttons.forEach((btn, i) => {
+                btn.disabled = true;
+                if (debrief.reflectionOptions[i].isKey) btn.style.background = 'rgba(16,185,129,0.4)';
+                else if (i === idx) btn.style.background = 'rgba(239,68,68,0.3)';
+            });
+
+            const insightDiv = document.getElementById('debriefInsight');
+            insightDiv.style.display = 'block';
+            insightDiv.innerHTML = `<strong>${opt.isKey ? '✅' : '💡'} Insight:</strong> ${opt.insight}`;
+
+            if (opt.isKey) {
+                sounds.correct();
+                gameState.xp += 50;
+                gameState.totalCorrect++;
+                gameState.streak++;
+                updateXPDisplay();
+                showStreak();
+                spawnConfetti(8);
+            } else {
+                sounds.wrong();
+                gameState.streak = 0;
+                hideStreak();
+            }
+            gameState.totalQuestions++;
+
+            document.getElementById('debriefContinueBtn').style.display = 'inline-block';
+            document.getElementById('debriefAnswerPrompt').style.display = 'none';
+        }
+
+        function finishDebrief(chapter) {
+            const chapterKey = `chapter${chapter}`;
+            gameState[chapterKey].completed = true;
+            gameState[chapterKey].score = gameState[chapterKey].simPassed ? 80 : 50;
+            sounds.levelUp();
+            gameState.xp += 200;
+            updateXPDisplay();
+            spawnConfetti(30);
+            saveState();
+
+            if (!gameState.achievements.firstBuild && chapter === 1) {
+                gameState.achievements.firstBuild = true;
+            }
+
+            showFeedback(
+                true,
+                `🎉 LEVEL ${chapter} COMPLETE!`,
+                `Great work, Mayor ${gameState.playerName}! You understood the concept and advanced your city!`,
+                () => { goToChapterSelect(); }
+            );
+        }
+
+        // ==================== FINAL CHALLENGE QUIZ ====================
         let currentQuiz = [];
         let currentQuizIndex = 0;
         let currentChapter = 1;
         let quizAnswers = [];
-
-        function startQuiz(chapter) {
-            currentChapter = chapter;
-            currentQuizIndex = 0;
-            quizAnswers = [];
-
-            if (chapter === 1) currentQuiz = [...chapter1Quiz];
-            else if (chapter === 2) currentQuiz = [...chapter2Quiz];
-            else if (chapter === 3) currentQuiz = [...chapter3Quiz];
-            else currentQuiz = [...finalQuiz];
-
-            renderQuizProgress(chapter);
-            renderQuizQuestion(chapter);
-        }
+        let quizLocked = false;
 
         function startFinalChallenge() {
             if (!gameState.chapter3.completed) return;
             sounds.click();
-            showScreen('finalChallengeScreen');
             currentChapter = 4;
-            startQuiz(4);
+            currentQuizIndex = 0;
+            quizAnswers = [];
+            quizLocked = false;
+            currentQuiz = [...finalQuiz];
+            showScreen('finalChallengeScreen');
+            renderFinalQuestion();
         }
 
-        function renderQuizProgress(chapter) {
-            const progressId = chapter === 4 ? 'quizFinalProgress' : `quiz${chapter}Progress`;
-            const container = document.getElementById(progressId);
-            container.innerHTML = '';
+        function renderFinalQuestion() {
+            const container = document.getElementById('quizFinalContainer');
+            const progress = document.getElementById('quizFinalProgress');
+            const q = currentQuiz[currentQuizIndex];
 
+            progress.innerHTML = '';
             for (let i = 0; i < currentQuiz.length; i++) {
                 const dot = document.createElement('div');
-                dot.className = 'quiz-dot';
-                if (i === currentQuizIndex) dot.classList.add('active');
-                if (quizAnswers[i] !== undefined) {
-                    dot.classList.add(quizAnswers[i] ? 'correct' : 'wrong');
-                }
-                container.appendChild(dot);
+                dot.className = 'quiz-dot' + (i === currentQuizIndex ? ' active' : '') + (quizAnswers[i] !== undefined ? (quizAnswers[i] ? ' correct' : ' wrong') : '');
+                progress.appendChild(dot);
             }
-        }
-
-        function renderQuizQuestion(chapter) {
-            const containerId = chapter === 4 ? 'quizFinalContainer' : `quiz${chapter}Container`;
-            const container = document.getElementById(containerId);
-            const q = currentQuiz[currentQuizIndex];
 
             container.innerHTML = `
                 <div class="question-card">
-                    <div class="question-number">Question ${currentQuizIndex + 1} of ${currentQuiz.length}</div>
+                    <div class="question-number">Press Conference Q${currentQuizIndex + 1} of ${currentQuiz.length}</div>
                     <div class="question-text">${q.q}</div>
                     <div class="answers-grid">
                         ${q.options.map((opt, i) => `
-                            <button class="answer-btn" onclick="selectAnswer(${i}, ${chapter})">${opt}</button>
+                            <button class="answer-btn" onclick="selectAnswer(${i}, 4)" style="text-align: left;">${opt}</button>
                         `).join('')}
                     </div>
                 </div>
@@ -2006,6 +2397,8 @@
         }
 
         function selectAnswer(answerIndex, chapter) {
+            if (quizLocked) return;
+            quizLocked = true;
             const q = currentQuiz[currentQuizIndex];
             const isCorrect = answerIndex === q.correct;
             const buttons = document.querySelectorAll('.answer-btn');
@@ -2015,6 +2408,14 @@
                 if (i === q.correct) btn.classList.add('correct');
                 if (i === answerIndex && !isCorrect) btn.classList.add('wrong');
             });
+
+            if (q.explanation) {
+                const container = document.getElementById('quizFinalContainer');
+                const expDiv = document.createElement('div');
+                expDiv.style.cssText = 'margin-top: 16px; background: rgba(16,185,129,0.15); border: 1px solid var(--success); border-radius: 10px; padding: 15px; color: rgba(255,255,255,0.9);';
+                expDiv.innerHTML = `<strong>${isCorrect ? '✅' : '💡'} Explanation:</strong> ${q.explanation}`;
+                container.appendChild(expDiv);
+            }
 
             quizAnswers[currentQuizIndex] = isCorrect;
 
@@ -2031,76 +2432,38 @@
                 gameState.streak = 0;
                 hideStreak();
             }
-
             gameState.totalQuestions++;
 
             setTimeout(() => {
+                quizLocked = false;
                 currentQuizIndex++;
                 if (currentQuizIndex >= currentQuiz.length) {
-                    finishQuiz(chapter);
+                    finishFinalChallenge();
                 } else {
-                    renderQuizProgress(chapter);
-                    renderQuizQuestion(chapter);
+                    renderFinalQuestion();
                 }
-            }, 1500);
+            }, 2000);
         }
 
-        function finishQuiz(chapter) {
+        function finishFinalChallenge() {
             const correct = quizAnswers.filter(a => a).length;
             const total = currentQuiz.length;
-            const passed = correct >= 4;
-
-            if (chapter === 4) {
-                gameState.finalChallenge.score = Math.round((correct / total) * 100);
-                gameState.finalChallenge.completed = true;
-                showResults();
-                return;
-            }
-
-            const chapterKey = `chapter${chapter}`;
-            gameState[chapterKey].score = Math.round((correct / total) * 100);
-            gameState[chapterKey].completed = passed;
-
-            if (passed) {
-                sounds.levelUp();
-                gameState.xp += 200;
-                updateXPDisplay();
-                spawnConfetti(30);
-                showFeedback(
-                    true,
-                    `🎉 LEVEL ${chapter} COMPLETE!`,
-                    `You got ${correct}/${total} right! Amazing work, ${gameState.playerName}!`,
-                    () => {
-                        goToChapterSelect();
-                    }
-                );
-
-                // Check achievements
-                if (correct === 5 && !gameState.achievements.perfectQuiz) {
-                    gameState.achievements.perfectQuiz = true;
-                    setTimeout(() => showFeedback(true, '🏆 ACHIEVEMENT!', 'Perfect Quiz! You got all 5 right!', closeFeedback), 2000);
-                }
-            } else {
-                sounds.wrong();
-                showFeedback(
-                    false,
-                    '😅 Almost there!',
-                    `You got ${correct}/${total}. You need 4 to pass. Try the simulation again!`,
-                    () => {
-                        startChapter(chapter);
-                    }
-                );
-            }
+            gameState.finalChallenge.score = Math.round((correct / total) * 100);
+            gameState.finalChallenge.completed = true;
+            saveState();
+            showResults();
         }
 
         // ==================== RESULTS ====================
         function showResults() {
             // Calculate final score
             const simPassed = gameState.chapter1.simPassed && gameState.chapter2.simPassed && gameState.chapter3.simPassed;
-            const mcqScore = Math.round((gameState.totalCorrect / gameState.totalQuestions) * 100);
-            const passed = simPassed && mcqScore >= 65;
+            const reflectScore = gameState.totalQuestions > 0 ? Math.round((gameState.totalCorrect / gameState.totalQuestions) * 100) : 0;
+            const finalScore = Math.round((reflectScore * 0.4) + (gameState.finalChallenge.score * 0.6));
+            const mcqScore = finalScore;
+            const passed = simPassed && reflectScore >= 50;
 
-            document.getElementById('finalScore').textContent = mcqScore + '%';
+            document.getElementById('finalScore').textContent = finalScore + '%';
             document.getElementById('questionsCorrect').textContent = `${gameState.totalCorrect}/${gameState.totalQuestions}`;
             document.getElementById('totalXP').textContent = gameState.xp;
 
@@ -2152,20 +2515,25 @@
         }
 
         function restartGame() {
+            clearSavedGame();
             gameState = {
                 playerName: gameState.playerName,
                 coins: 100,
                 xp: 0,
                 streak: 0,
-                chapter1: { completed: false, budget: 100, impact: 0, score: 0, simPassed: false },
-                chapter2: { completed: false, budget: 0, impact: 0, score: 0, simPassed: false },
-                chapter3: { completed: false, budget: 0, impact: 0, score: 0, simPassed: false },
+                chapter1: { completed: false, budget: 100, impact: 0, score: 0, simPassed: false, synergyBonus: 0 },
+                chapter2: { completed: false, budget: 0, impact: 0, score: 0, simPassed: false, startingBudget: 60 },
+                chapter3: { completed: false, budget: 0, impact: 0, score: 0, simPassed: false, startingBudget: 40 },
                 finalChallenge: { completed: false, score: 0 },
                 totalCorrect: 0,
                 totalQuestions: 0,
                 soundEnabled: gameState.soundEnabled,
+                cityMemory: { builtRoads: false, builtSchools: false, ch1Projects: [], ch1Leftover: 0, ch2Projects: [], ch3Choice: null },
                 achievements: { ...gameState.achievements }
             };
+            ch1Selected = []; ch1UndoStack = [];
+            ch2Selected = []; ch2UndoStack = []; ch2Multiplier = 1; ch2PurchasedCosts = {};
+            ch3Selected = null;
             updateXPDisplay();
             showScreen('chapterSelectScreen');
             updateChapterCards();
@@ -2224,6 +2592,14 @@
 
                 setTimeout(() => confetti.remove(), 3000);
             }
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.textContent = msg;
+            toast.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(34,211,238,0.95);color:#0f0a2e;padding:12px 24px;border-radius:30px;font-weight:700;font-size:1rem;z-index:200;animation:fadeIn 0.3s;';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
         }
 
         function addBuilding(cityViewId) {
